@@ -112,8 +112,8 @@ public class MecanumTeleop_Creotion extends OpMode{
         boolean g_button_a; // armLift (down)
         boolean g_bumper_left; // leftGripper/rightGripper (open)
         boolean g_bumper_right; // leftGripper/rightGripper (close)
-        boolean g_trigger_left; // relicGripper (open)
-        boolean g_trigger_right; // relicGripper (close)
+        double g_trigger_left; // relicGripper (open)
+        double g_trigger_right; // relicGripper (close)
         boolean g_dpad_left; // relicPivot (turn CC)
         boolean g_dpad_right; // relicPivot (turn C)
 
@@ -128,9 +128,16 @@ public class MecanumTeleop_Creotion extends OpMode{
 
         // gunner
         g_left_y = -gamepad2.left_stick_y;
-
-
         g_right_y = -gamepad2.right_stick_y;
+        g_button_y = gamepad2.y;
+        g_button_a = gamepad2.a;
+        g_bumper_left = gamepad2.left_bumper;
+        g_bumper_right = gamepad2.right_bumper;
+        g_trigger_left = gamepad2.left_trigger;
+        g_trigger_right = gamepad2.right_trigger;
+        g_dpad_left = gamepad2.dpad_left;
+        g_dpad_right = gamepad2.dpad_right;
+
 
         double lFrontDrive = 0;
         double rFrontDrive = 0;
@@ -158,18 +165,18 @@ public class MecanumTeleop_Creotion extends OpMode{
         robot.armExtender.setPower(g_right_y);
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (gamepad2.y)
+        if (g_button_y)
             robot.armLift.setPower(robot.ARM_UP_POWER);
-        else if (gamepad2.a)
+        else if (g_button_a)
             robot.armLift.setPower(robot.ARM_DOWN_POWER);
         else
             robot.armLift.setPower(0.0);
 
         // GLYPH GRIPPER
         // Use gamepad left & right Bumpers to open and close the claw
-        if (gamepad2.right_bumper)
+        if (g_bumper_right)
             clawOffset_glyph += CLAW_SPEED_glyph;
-        else if (gamepad2.left_bumper)
+        else if (g_bumper_left)
             clawOffset_glyph -= CLAW_SPEED_glyph;
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
@@ -178,23 +185,23 @@ public class MecanumTeleop_Creotion extends OpMode{
         robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
 
         // RELIC PIVOT
-        if (gamepad2.dpad_left)
+        if (g_dpad_left)
             clawOffset_relic += CLAW_SPEED_relic;
-        else if (gamepad2.dpad_right)
+        else if (g_dpad_right)
             clawOffset_relic -= CLAW_SPEED_relic;
 
-        if (gamepad2.dpad_left || gamepad2.dpad_right) {
+        if (g_dpad_left || g_dpad_right) {
             clawOffset_relic = Range.clip(clawOffset_relic, -0.5, 0.5);
             robot.relicPivot.setPosition(robot.MID_SERVO + clawOffset_relic);
         }
 
         // RELIC GRIPPER
-        if (gamepad2.left_trigger != 0)
+        if (g_trigger_left != 0)
             clawOffset_relic += CLAW_SPEED_relic;
-        else if (gamepad2.right_trigger != 0)
+        else if (g_trigger_right != 0)
             clawOffset_relic -= CLAW_SPEED_relic;
 
-        if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
+        if (g_trigger_left != 0 || g_trigger_right != 0) {
             clawOffset_relic = Range.clip(clawOffset_relic, -0.5, 0.5);
             robot.relicGripper.setPosition(robot.MID_SERVO - clawOffset_relic);
         }
