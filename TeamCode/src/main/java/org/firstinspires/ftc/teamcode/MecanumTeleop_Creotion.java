@@ -146,20 +146,16 @@ public class MecanumTeleop_Creotion extends OpMode{
         double lRearDrive = 0;
         double rRearDrive = 0;
 
-        if (java.lang.Math.abs(p_left_y) > 0 ||
-            java.lang.Math.abs(p_right_y) > 0 ||
-            java.lang.Math.abs(p_left_x) > 0) {
-            if (p_left_x == 0) { // forward/reverse
-                lFrontDrive = -p_left_y;
-                lRearDrive = -p_left_y;
-                rFrontDrive = p_right_y;
-                rRearDrive = p_right_y;
-            } else { // left/right shift
-                lFrontDrive = -p_left_x;
-                lRearDrive = p_left_x;
-                rFrontDrive = -p_left_x;
-                rRearDrive = p_left_x;
-            }
+        if (java.lang.Math.abs(p_left_y) > 0 || java.lang.Math.abs(p_right_y) > 0) { // forward/reverse
+            lFrontDrive = -p_left_y;
+            lRearDrive = -p_left_y;
+            rFrontDrive = p_right_y;
+            rRearDrive = p_right_y;
+        } else if (java.lang.Math.abs(p_left_x) > 0) { // left/right shift
+            lFrontDrive = -p_left_x;
+            lRearDrive = p_left_x;
+            rFrontDrive = -p_left_x;
+            rRearDrive = p_left_x;
         }
 
         robot.leftFrontDrive.setPower(lFrontDrive);
@@ -214,9 +210,20 @@ public class MecanumTeleop_Creotion extends OpMode{
 
         // Send telemetry message to signify robot running;
         telemetry.addData("claw",  "Offset = %.2f", clawOffset_glyph);
-        telemetry.addData("left",  "%.2f", p_left_y);
-        telemetry.addData("right", "%.2f", p_right_y);
-        telemetry.addData("right", "%.2f", p_left_x);
+        telemetry.addData("p_left_y",  "%.2f", p_left_y);
+        telemetry.addData("p_right_y", "%.2f", p_right_y);
+        telemetry.addData("p_left_x", "%.2f", p_left_x);
+        telemetry.addData("g_left_y", "%.2f", g_left_y);
+        telemetry.addData("g_right_y", "%.2f", g_right_y);
+        telemetry.addData("g_button_y", "%.2f", g_button_y);
+        telemetry.addData("g_button_a", "%.2f", g_button_a);
+        telemetry.addData("g_bumper_left", "%.2f", g_bumper_left);
+        telemetry.addData("g_bumper_right", "%.2f", g_bumper_right);
+        telemetry.addData("g_trigger_left", "%.2f", g_trigger_left);
+        telemetry.addData("g_trigger_right", "%.2f", g_trigger_right);
+        telemetry.addData("g_dpad_left", "%.2f", g_dpad_left);
+        telemetry.addData("g_dpad_right", "%.2f", g_dpad_right);
+
     }
 
     /*
