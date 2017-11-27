@@ -122,9 +122,9 @@ public class MecanumTeleop_Creotion extends OpMode{
 
         // pilot
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
-        p_left_y = -gamepad1.left_stick_y; // use multiple to adjust speed
-        p_right_y = -gamepad1.right_stick_y; // use multiple to adjust speed
-        p_left_x = gamepad1.left_stick_x * .75; // use multiple to adjust speed
+        p_left_y = -gamepad1.left_stick_y * .75; // use multiple to adjust speed
+        p_right_y = -gamepad1.right_stick_y * .75; // use multiple to adjust speed
+        p_left_x = gamepad1.left_stick_x; // full speed
 
         // gunner
         g_left_y = -gamepad2.left_stick_y;
