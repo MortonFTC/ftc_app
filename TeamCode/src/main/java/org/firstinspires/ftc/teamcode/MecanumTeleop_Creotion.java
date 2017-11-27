@@ -122,9 +122,9 @@ public class MecanumTeleop_Creotion extends OpMode{
 
         // pilot
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
-        p_left_y = -gamepad1.left_stick_y * .5; // use multiple to adjust speed
-        p_right_y = -gamepad1.right_stick_y * .5; // use multiple to adjust speed
-        p_left_x = gamepad1.left_stick_x * .5; // use multiple to adjust speed
+        p_left_y = -gamepad1.left_stick_y; // use multiple to adjust speed
+        p_right_y = -gamepad1.right_stick_y; // use multiple to adjust speed
+        p_left_x = gamepad1.left_stick_x * .75; // use multiple to adjust speed
 
         // gunner
         g_left_y = -gamepad2.left_stick_y;
@@ -215,14 +215,14 @@ public class MecanumTeleop_Creotion extends OpMode{
         telemetry.addData("p_left_x", "%.2f", p_left_x);
         telemetry.addData("g_left_y", "%.2f", g_left_y);
         telemetry.addData("g_right_y", "%.2f", g_right_y);
-        telemetry.addData("g_button_y", "%.2f", g_button_y);
-        telemetry.addData("g_button_a", "%.2f", g_button_a);
-        telemetry.addData("g_bumper_left", "%.2f", g_bumper_left);
-        telemetry.addData("g_bumper_right", "%.2f", g_bumper_right);
+        telemetry.addData("g_button_y", "", g_button_y);
+        telemetry.addData("g_button_a", "", g_button_a);
+        telemetry.addData("g_bumper_left", "", g_bumper_left); // cuts off after this
+        telemetry.addData("g_bumper_right", "", g_bumper_right);
         telemetry.addData("g_trigger_left", "%.2f", g_trigger_left);
         telemetry.addData("g_trigger_right", "%.2f", g_trigger_right);
-        telemetry.addData("g_dpad_left", "%.2f", g_dpad_left);
-        telemetry.addData("g_dpad_right", "%.2f", g_dpad_right);
+        telemetry.addData("g_dpad_left", "", g_dpad_left);
+        telemetry.addData("g_dpad_right", "", g_dpad_right);
 
     }
 
