@@ -139,21 +139,27 @@ public class MecanumTeleop_Creotion extends OpMode{
         g_dpad_right = gamepad2.dpad_right;
 
 
+        // DECLARE MOTOR VARIABLES
+
         double lFrontDrive = 0;
         double rFrontDrive = 0;
         double lRearDrive = 0;
         double rRearDrive = 0;
 
-        if (p_left_x != 0) { // left/right shift
-            lFrontDrive = -p_left_x;
-            lRearDrive = p_left_x;
-            rFrontDrive = -p_left_x;
-            rRearDrive = p_left_x;
-        } else {
-            lFrontDrive = -p_left_y;
-            lRearDrive = -p_left_y;
-            rFrontDrive = p_right_y;
-            rRearDrive = p_right_y;
+        if (java.lang.Math.abs(p_left_y) > 0 ||
+            java.lang.Math.abs(p_right_y) > 0 ||
+            java.lang.Math.abs(p_left_x) > 0) {
+            if (p_left_x == 0) { // forward/reverse
+                lFrontDrive = -p_left_y;
+                lRearDrive = -p_left_y;
+                rFrontDrive = p_right_y;
+                rRearDrive = p_right_y;
+            } else { // left/right shift
+                lFrontDrive = -p_left_x;
+                lRearDrive = p_left_x;
+                rFrontDrive = -p_left_x;
+                rRearDrive = p_left_x;
+            }
         }
 
         robot.leftFrontDrive.setPower(lFrontDrive);
