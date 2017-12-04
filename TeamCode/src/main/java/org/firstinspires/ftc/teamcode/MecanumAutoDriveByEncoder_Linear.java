@@ -64,7 +64,7 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Disabled
+//@Disabled
 @Autonomous(name="Mecanum: Auto Drive By Encoder", group="Auto")
 public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
 
@@ -77,7 +77,7 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
     static final double     WHEEL_DIAMETER_INCHES   = 6.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
+    static final double     DRIVE_SPEED             = 0.05;
     static final double     TURN_SPEED              = 0.5;
 
     @Override
@@ -117,8 +117,8 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-        encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
-        encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+        //encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        //encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
 //        robot.rightClaw.setPosition(0.0);
@@ -144,6 +144,9 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
         int newLeftRearTarget;
         int newRightRearTarget;
 
+        // negate left-side motors due position on robot
+        leftInches = -leftInches;
+
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
@@ -165,10 +168,10 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.leftFrontDrive.setPower(Math.abs(speed));
-            robot.rightFrontDrive.setPower(Math.abs(speed));
-            robot.leftRearDrive.setPower(Math.abs(speed));
-            robot.rightRearDrive.setPower(Math.abs(speed));
+            robot.leftFrontDrive.setPower(speed);
+            robot.rightFrontDrive.setPower(speed);
+            robot.leftRearDrive.setPower(speed);
+            robot.rightRearDrive.setPower(speed);
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when ANY motor hits
