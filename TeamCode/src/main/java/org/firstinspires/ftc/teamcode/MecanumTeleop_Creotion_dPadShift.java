@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
@@ -47,7 +48,8 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Mecanum: Teleop Creotion", group="")
+@Disabled
+@TeleOp(name="Mecanum: Teleop Creotion_dPadShift", group="Manual")
 
 public class MecanumTeleop_Creotion_dPadShift extends OpMode{
 
@@ -122,8 +124,8 @@ public class MecanumTeleop_Creotion_dPadShift extends OpMode{
         p_left_y = -gamepad1.left_stick_y * .75; // use multiple to adjust speed
         p_right_y = -gamepad1.right_stick_y * .75; // use multiple to adjust speed
         //p_left_x = gamepad1.left_stick_x; // full speed
-        g_dpad_left = gamepad2.dpad_left;
-        g_dpad_right = gamepad2.dpad_right;
+        g_dpad_left = gamepad1.dpad_left;
+        g_dpad_right = gamepad1.dpad_right;
 
         // gunner
         g_left_y = -gamepad2.left_stick_y;

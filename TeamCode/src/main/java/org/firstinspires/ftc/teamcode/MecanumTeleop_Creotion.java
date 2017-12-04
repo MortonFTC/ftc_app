@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
@@ -50,7 +51,7 @@ import static android.R.attr.right;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Mecanum: Teleop Creotion", group="")
+@TeleOp(name="Mecanum: Teleop Creotion", group="Manual")
 
 public class MecanumTeleop_Creotion extends OpMode{
 
@@ -182,7 +183,7 @@ public class MecanumTeleop_Creotion extends OpMode{
             clawOffset_glyph -= CLAW_SPEED_glyph;
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.2, -0.05);
+        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
         robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph);
         robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
 
