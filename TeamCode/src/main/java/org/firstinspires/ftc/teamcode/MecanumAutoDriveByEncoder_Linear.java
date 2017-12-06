@@ -72,8 +72,8 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
     private ElapsedTime     runtime = new ElapsedTime();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 28 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 40.0 ;     // This is < 1.0 if geared UP
+    static final double     COUNTS_PER_MOTOR_REV    = 1600;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 6.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
@@ -188,10 +188,10 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
                 telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d",
                         newLeftFrontTarget,  newRightFrontTarget, newLeftRearTarget, newRightRearTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
-                                            robot.leftFrontDrive.getCurrentPosition(),
-                                            robot.rightFrontDrive.getCurrentPosition(),
-                                            robot.leftRearDrive.getCurrentPosition(),
-                                            robot.rightRearDrive.getCurrentPosition());
+                        robot.leftFrontDrive.getCurrentPosition(),
+                        robot.rightFrontDrive.getCurrentPosition(),
+                        robot.leftRearDrive.getCurrentPosition(),
+                        robot.rightRearDrive.getCurrentPosition());
                 telemetry.update();
             }
 
