@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -80,6 +81,8 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
     static final double     DRIVE_SPEED             = 0.15;
     static final double     TURN_SPEED              = 0.15;
 
+    ColorSensor colorSensor;
+
     @Override
     public void runOpMode() {
 
@@ -114,10 +117,20 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
+        colorSensor = robot.colorSensor;
+
+        telemetry.addData("alpha", colorSensor.alpha());    //
+        telemetry.addData("red", colorSensor.red());    //
+        telemetry.addData("green", colorSensor.green());    //
+        telemetry.addData("blue", colorSensor.blue());    //
+        telemetry.update();
+
+        //robot.ballArm.setPosition(-1.0);
+
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  30,  30, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
-        encoderDrive(TURN_SPEED,   21, -21, 10.0);  // S2: Turn Right 12 Inches with 10 Sec timeout
+        //encoderDrive(DRIVE_SPEED,  30,  30, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+        //encoderDrive(TURN_SPEED,   21, -21, 10.0);  // S2: Turn Right 12 Inches with 10 Sec timeout
         //encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
