@@ -57,10 +57,13 @@ public class HardwareMecanum
     public DcMotor  armExtender    = null; // REV Robotics HD Hex motor
     public DcMotor  armLift   = null; // REV Robotics Core Hex motor
 
-    public Servo    leftGripper = null; // Smart Robot Servo
-    public Servo    rightGripper= null; // Smart Robot Servo
-    public Servo    relicPivot  = null; // Smart Robot Servo
-    public Servo    relicGripper= null; // Smart Robot Servo
+    public Servo    leftGripper      = null; // Smart Robot Servo
+    public Servo    rightGripper     = null; // Smart Robot Servo
+    public Servo    relicPivot       = null; // Smart Robot Servo
+    public Servo    relicGripper     = null; // Smart Robot Servo
+    public Servo    ballArm          = null; // Smart Robot Servo (Wyatt 12-18)
+    public Servo    ballArmExtension = null; // Smart Robot Servo (Wyatt 12-18)
+
 
     public static final double MID_SERVO       =  0.5 ;
     public static final double ARM_UP_POWER    = -1.0 ;
