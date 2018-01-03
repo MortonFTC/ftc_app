@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -76,6 +77,9 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.15;
     static final double     TURN_SPEED              = 0.15;
+
+    double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
+    final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
 
     @Override
     public void runOpMode() {
@@ -121,32 +125,57 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        //robot.ballArmServo.setPosition(-1.0);
+        robot.swingServo.setPosition(0.85);
+        robot.ballArmServo.setPosition(0.2);
+        sleep(500);
+        robot.ballArmServo.setPosition(0.14);
+        sleep(500);
 
         int redValue = robot.colorSensor.red();
-        int greenValue = robot.colorSensor.green();
         int blueValue = robot.colorSensor.blue();
 
-        boolean isRed = (redValue < blueValue) ? true : false;
+        boolean isRed = (redValue > blueValue) ? true : false;
         String color = (isRed) ? "red" : "blue";
 
         telemetry.addData("color", color);
         telemetry.addData("red", redValue);
-        telemetry.addData("green", greenValue);
         telemetry.addData("blue", blueValue);
         telemetry.update();
 
-        sleep(15000);     // pause for servos to move
+        if (isRed) {
+            robot.swingServo.setPosition(1.2);
+        } else {
+            robot.swingServo.setPosition(0.6);
+        }
+
+        sleep(250);
+        robot.ballArmServo.setPosition(0.4);
+        sleep(250);
+        robot.swingServo.setPosition(0.5);
+        sleep(250);
+        robot.ballArmServo.setPosition(0.5);
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        //encoderDrive(DRIVE_SPEED,  30,  30, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
-        //encoderDrive(TURN_SPEED,   21, -21, 10.0);  // S2: Turn Right 12 Inches with 10 Sec timeout
-        //encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+        encoderDrive(DRIVE_SPEED,  -34.67,  -34.67, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+        sleep(500);
+        encoderTilt(0.5, 42, 15.0);
+        sleep(250);
+        encoderDrive(TURN_SPEED,   -21, 21, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        sleep(250);
+        encoderDrive(DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+        sleep(250);
+
+        // Move both servos to new position.  Assume servos are mirror image of each other.
+        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
+        robot.leftGripper.setPosition(robot.MID_SERVO + .02);
+        robot.rightGripper.setPosition(robot.MID_SERVO - .02);
+
+        encoderDrive(DRIVE_SPEED, -2, -2, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
 //        robot.rightClaw.setPosition(0.0);
-        sleep(1000);     // pause for servos to move
+        sleep(30000);     // pause for servos to move
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -234,4 +263,45 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
             //  sleep(250);   // optional pause after each move
         }
     }
+
+    public void encoderTilt(double speed,
+                             double rotation,
+                             double timeoutS) {
+        int newTarget;
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newTarget = robot.armTilt.getCurrentPosition() + (int) (rotation * 110);
+            robot.armTilt.setTargetPosition(newTarget);
+
+            // Turn On RUN_TO_POSITION
+            robot.armTilt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+            robot.armTilt.setPower(speed);
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when ANY motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (robot.armTilt.isBusy())) {
+            }
+
+            // Stop all motion;
+            robot.armTilt.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.armTilt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
+        }
+    }
+
 }
