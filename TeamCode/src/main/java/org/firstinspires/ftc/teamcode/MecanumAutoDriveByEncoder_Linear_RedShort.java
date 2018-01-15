@@ -159,18 +159,18 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         encoderDrive(DRIVE_SPEED,  -34.67,  -34.67, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
         sleep(500);
-        encoderTilt(0.5, 42, 15.0);
-        sleep(250);
         encoderDrive(TURN_SPEED,   -21, 21, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        sleep(250);
+        encoderTilt(0.5, 42, 15.0);
         sleep(250);
         encoderDrive(DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
         sleep(250);
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-        robot.leftGripper.setPosition(robot.MID_SERVO + .02);
-        robot.rightGripper.setPosition(robot.MID_SERVO - .02);
-
+        //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
+        robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
+        robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
+        sleep(500);
         encoderDrive(DRIVE_SPEED, -2, -2, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
