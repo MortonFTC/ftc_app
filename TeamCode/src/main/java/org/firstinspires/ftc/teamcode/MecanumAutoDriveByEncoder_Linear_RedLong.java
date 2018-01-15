@@ -124,7 +124,7 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        robot.swingServo.setPosition(0.70);
+        robot.swingServo.setPosition(0.45);
         robot.ballArmServo.setPosition(0.2);
         sleep(500);
         robot.ballArmServo.setPosition(0.14);
