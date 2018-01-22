@@ -185,6 +185,19 @@ public class MecanumTeleop_Creotion_JK extends OpMode{
         robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph);
         robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
 
+
+//        // NEW GRIPPER CODE (NOT WORKING)
+//        // GLYPH GRIPPER
+//        // Use gamepad left & right Bumpers to open and close the claw
+//        if (g_bumper_right) { // close
+//            robot.leftGripper.setPosition(.125);
+//            robot.rightGripper.setPosition(-.125);
+//        } else if (g_bumper_left) { // open
+//            robot.leftGripper.setPosition(-.07);
+//            robot.rightGripper.setPosition(.07);
+//        }
+
+
         // RELIC PIVOT
         if (g_dpad_left)
             clawOffset_relic += CLAW_SPEED_relic;
