@@ -192,7 +192,7 @@ public class MecanumTeleop_Creotion extends OpMode{
             robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph + 0.1);
             robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
         }
-        
+
         // RELIC PIVOT
         if (g_dpad_left)
             clawOffset_relic += CLAW_SPEED_relic;
