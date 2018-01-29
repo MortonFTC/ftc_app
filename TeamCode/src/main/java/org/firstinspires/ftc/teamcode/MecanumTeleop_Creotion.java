@@ -187,10 +187,12 @@ public class MecanumTeleop_Creotion extends OpMode{
             clawOffset_glyph -= CLAW_SPEED_glyph;
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.1, .2);
-        robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph + 0.1);
-        robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
-
+        if (g_bumper_right || g_bumper_left) {
+            clawOffset_glyph = Range.clip(clawOffset_glyph, -0.1, .2);
+            robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph + 0.1);
+            robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
+        }
+        
         // RELIC PIVOT
         if (g_dpad_left)
             clawOffset_relic += CLAW_SPEED_relic;
