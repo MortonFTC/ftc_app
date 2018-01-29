@@ -33,7 +33,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -63,8 +62,8 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 //@Disabled
-@Autonomous(name="Mecanum: Auto Drive By Encoder (Red Short)", group="Auto")
-public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
+@Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Long)", group="Auto")
+public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
@@ -143,9 +142,9 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
         telemetry.update();
 
         if (isRed) {
-            robot.swingServo.setPosition(1.2);
-        } else {
             robot.swingServo.setPosition(0.6);
+        } else {
+            robot.swingServo.setPosition(1.2);
         }
 
         sleep(250);
@@ -157,13 +156,17 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  -34.67,  -34.67, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+        encoderDrive(DRIVE_SPEED,  25.0, 25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
         sleep(500);
         encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
         sleep(250);
+        encoderDrive(DRIVE_SPEED,   -10.92, -10.92, 15.0);
+        sleep(250);
+        encoderDrive(TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        sleep(250);
         encoderTilt(0.5, 42, 15.0);
         sleep(250);
-        encoderDrive(DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+        encoderDrive(DRIVE_SPEED, 4.803, 4.803, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
         sleep(250);
 
         // Move both servos to new position.  Assume servos are mirror image of each other.

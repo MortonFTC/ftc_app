@@ -70,8 +70,8 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
     private ElapsedTime     runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 6.0 ;     // For figuring circumference
+    static final double     DRIVE_GEAR_REDUCTION    = 1.4;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 6.0;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.15;
@@ -124,10 +124,10 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        robot.swingServo.setPosition(0.45);
+        robot.swingServo.setPosition(0.85);
         robot.ballArmServo.setPosition(0.2);
         sleep(500);
-        robot.ballArmServo.setPosition(0.14);
+        robot.ballArmServo.setPosition(0.08);
         sleep(500);
 
         int redValue = robot.colorSensor.red();
@@ -158,11 +158,11 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         encoderDrive(DRIVE_SPEED,  -25.0, -25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
         sleep(500);
-        encoderDrive(TURN_SPEED,   -21, 21, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
         sleep(250);
         encoderDrive(DRIVE_SPEED,   -11.92, -11.92, 15.0);
         sleep(250);
-        encoderDrive(TURN_SPEED,   -21, 21, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
         sleep(250);
         encoderTilt(0.5, 42, 15.0);
         sleep(250);
@@ -174,7 +174,7 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
         robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
         robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
         sleep(500);
-        encoderDrive(DRIVE_SPEED, -2, -2, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+        encoderDrive(DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
 //        robot.rightClaw.setPosition(0.0);

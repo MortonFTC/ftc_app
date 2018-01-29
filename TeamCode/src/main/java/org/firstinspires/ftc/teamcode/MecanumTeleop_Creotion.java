@@ -84,6 +84,10 @@ public class MecanumTeleop_Creotion extends OpMode{
      */
     @Override
     public void init_loop() {
+
+        robot.swingServo.setPosition(0.5);
+        robot.ballArmServo.setPosition(.5);
+
     }
 
     /*
@@ -147,12 +151,12 @@ public class MecanumTeleop_Creotion extends OpMode{
         double lRearDrive = 0;
         double rRearDrive = 0;
 
-        if (java.lang.Math.abs(p_left_y) > 0 || java.lang.Math.abs(p_right_y) > 0) { // forward/reverse
+        if (Math.abs(p_left_y) > 0 || Math.abs(p_right_y) > 0) { // forward/reverse
             lFrontDrive = -p_left_y;
             lRearDrive = -p_left_y;
             rFrontDrive = p_right_y;
             rRearDrive = p_right_y;
-        } else if (java.lang.Math.abs(p_left_x) > 0) { // left/right shift
+        } else if (Math.abs(p_left_x) > 0) { // left/right shift
             lFrontDrive = -p_left_x;
             lRearDrive = p_left_x;
             rFrontDrive = -p_left_x;
@@ -183,8 +187,8 @@ public class MecanumTeleop_Creotion extends OpMode{
             clawOffset_glyph -= CLAW_SPEED_glyph;
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-        robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph);
+        clawOffset_glyph = Range.clip(clawOffset_glyph, -0.1, .2);
+        robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph + 0.1);
         robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
 
         // RELIC PIVOT
@@ -205,7 +209,7 @@ public class MecanumTeleop_Creotion extends OpMode{
             clawOffset_relic -= CLAW_SPEED_relic;
 
         if (g_trigger_left != 0 || g_trigger_right != 0) {
-            clawOffset_relic = Range.clip(clawOffset_relic, -0.5, 0.5);
+            clawOffset_relic = Range.clip(clawOffset_relic, -0.1, 0.5);
             robot.relicGripper.setPosition(robot.MID_SERVO - clawOffset_relic);
         }
 
@@ -219,11 +223,6 @@ public class MecanumTeleop_Creotion extends OpMode{
         telemetry.addData("g_button_y", "", g_button_y);
         telemetry.addData("g_button_a", "", g_button_a);
         telemetry.addData("g_bumper_left", "", g_bumper_left); // cuts off after this
-        telemetry.addData("g_bumper_right", "", g_bumper_right);
-        telemetry.addData("g_trigger_left", "%.2f", g_trigger_left);
-        telemetry.addData("g_trigger_right", "%.2f", g_trigger_right);
-        telemetry.addData("g_dpad_left", "", g_dpad_left);
-        telemetry.addData("g_dpad_right", "", g_dpad_right);
 
     }
 

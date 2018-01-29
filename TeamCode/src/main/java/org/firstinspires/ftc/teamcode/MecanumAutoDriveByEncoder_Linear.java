@@ -81,8 +81,6 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
     static final double     DRIVE_SPEED             = 0.15;
     static final double     TURN_SPEED              = 0.15;
 
-    ColorSensor colorSensor;
-
     @Override
     public void runOpMode() {
 
@@ -117,12 +115,10 @@ public class MecanumAutoDriveByEncoder_Linear extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        colorSensor = robot.colorSensor;
-
-        telemetry.addData("alpha", colorSensor.alpha());    //
-        telemetry.addData("red", colorSensor.red());    //
-        telemetry.addData("green", colorSensor.green());    //
-        telemetry.addData("blue", colorSensor.blue());    //
+        telemetry.addData("alpha", robot.colorSensor.alpha());    //
+        telemetry.addData("red", robot.colorSensor.red());    //
+        telemetry.addData("green", robot.colorSensor.green());    //
+        telemetry.addData("blue", robot.colorSensor.blue());    //
         telemetry.update();
 
         //robot.ballArm.setPosition(-1.0);

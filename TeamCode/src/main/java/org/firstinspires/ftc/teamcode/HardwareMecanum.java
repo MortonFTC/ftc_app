@@ -156,7 +156,7 @@ public class HardwareMecanum
         relicPivot.setPosition(MID_SERVO);
         relicGripper.setPosition(MID_SERVO);
         ballArmServo.setPosition(MID_SERVO);
-        swingServo.setPosition(MID_SERVO);
+        swingServo.setPosition(0.49);
 
 
         // Define and initialize ALL installed digital devices.
