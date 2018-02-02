@@ -96,9 +96,9 @@ public class HardwareMecanum
 
 
     /* constants */
-    public static final double MID_SERVO       =  0.5 ;
-    public static final double ARM_UP_POWER    = -1.0 ;
-    public static final double ARM_DOWN_POWER  = 1.0 ;
+    public static final double MID_SERVO       =  0.5;
+    public static final double ARM_UP_POWER    = -1.0;
+    public static final double ARM_DOWN_POWER  = 1.0;
 
 
     /* local OpMode members. */

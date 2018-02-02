@@ -67,9 +67,10 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
+    AutonomousMecanum       auto = new AutonomousMecanum();
     private ElapsedTime     runtime = new ElapsedTime();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
+/*    static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.4;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 6.0;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
@@ -79,6 +80,7 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
     final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
+*/
 
     @Override
     public void runOpMode() {
@@ -156,17 +158,17 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  25.0, 25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+        encoderDrive(auto.DRIVE_SPEED,  25.0, 25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
         sleep(500);
-        encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
         sleep(250);
-        encoderDrive(DRIVE_SPEED,   -10.92, -10.92, 15.0);
+        encoderDrive(auto.DRIVE_SPEED,   -10.92, -10.92, 15.0);
         sleep(250);
-        encoderDrive(TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+        encoderDrive(auto.TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
         sleep(250);
         encoderTilt(0.5, 42, 15.0);
         sleep(250);
-        encoderDrive(DRIVE_SPEED, 4.803, 4.803, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+        encoderDrive(auto.DRIVE_SPEED, 4.803, 4.803, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
         sleep(250);
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
@@ -174,7 +176,7 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
         robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
         robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
         sleep(500);
-        encoderDrive(DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+        encoderDrive(auto.DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
 
 //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
 //        robot.rightClaw.setPosition(0.0);
@@ -207,10 +209,10 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
+            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
             robot.leftFrontDrive.setTargetPosition(newLeftFrontTarget);
             robot.rightFrontDrive.setTargetPosition(newRightFrontTarget);
             robot.leftRearDrive.setTargetPosition(newLeftRearTarget);
