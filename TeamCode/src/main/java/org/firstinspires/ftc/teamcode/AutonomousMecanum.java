@@ -29,14 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Gyroscope;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 /**
  * This class defines methods and properties for Autonomous Op modes
  */
@@ -52,11 +44,28 @@ public class AutonomousMecanum
     public static final double     DRIVE_SPEED             = 0.15;
     public static final double     TURN_SPEED              = 0.15;
 
-    public double          clawOffset_glyph  = 0.0;                  // Servo mid position
-    public final double    CLAW_SPEED_glyph  = 0.02;                 // sets rate to move servo
+    public static double          clawOffset_glyph  = 0.0;                  // Servo mid position
+    public static final double    CLAW_SPEED_glyph  = 0.02;                 // sets rate to move servo
 
-    public double          leftGripperPosition  = 0.75;                  // Servo mid position
-    public final double    rightGripperPosition  = 0.375;                 // sets rate to move servo
+    public static double          leftGripperPosition  = 0.75;                  // Servo mid position
+    public static final double    rightGripperPosition  = 0.375;                 // sets rate to move servo
+
+    /*
+     * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+     * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+     * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+     * web site at https://developer.vuforia.com/license-manager.
+     *
+     * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+     * random data. As an example, here is a example of a fragment of a valid key:
+     *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+     * Once you've obtained a license key, copy the string from the Vuforia web site
+     * and paste it in to your code onthe next line, between the double quotes.
+     */
+
+    // license key added on 01/28/18 (registered to mortonftc for mecanumRobot) https://developer.vuforia.com/targetmanager/licenseManager/licenseListingDetails
+    public String vuforiaLicenseKey_MortonFTC = "AeWrHWf/////AAAAmZG3057lc0JXoVs+HjtHkjZyYL2/IQH4DPGcMKxDXU12F688beSRkSeE6Oz1nH1imNIbBvdwCWFtpqBTu9aqKnlQ9XE3cDLcuUa6/iv0yK3oKy/4p+C1KqltmtvLTda0rgoW8mVcohX38181Apke+iCMjogFT0FHT+3o36MrhYRT03H7Al4Ynqd09uLIGiCXwffq0Ws+YJvWbgbw3Upvjn+Rpbh/xUckxiqFFfU/5j5uCdjMFvUn3YLrLelYAKsaKLKTfMy+OeMbv8wd9By4EjM+A9RB7HKVv3pNZX8fOD9MuSh8y9zV+ZZi+EzcAzJehi9M4mLq7qAmjUgs4qOvtafr6L2dav8Vfw8TarFoD1mk";
+
 
     /* Constructor */
     public AutonomousMecanum(){

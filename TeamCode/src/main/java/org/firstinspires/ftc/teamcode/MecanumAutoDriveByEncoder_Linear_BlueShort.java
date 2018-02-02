@@ -33,6 +33,16 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -57,6 +67,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *  There are other ways to perform encoder based moves, but this method is probably the simplest.
  *  This code uses the RUN_TO_POSITION mode to enable the Motor controllers to generate the run profile
  *
+ * This OpMode illustrates the basics of using the Vuforia engine to determine
+ * the identity of Vuforia VuMarks encountered on the field. The code is structured as
+ * a LinearOpMode. It shares much structure with {@link ConceptVuforiaNavigation}; we do not here
+ * duplicate the core Vuforia documentation found there, but rather instead focus on the
+ * differences between the use of Vuforia for navigation vs VuMark identification.
+ *
+ * @see ConceptVuforiaNavigation
+ * @see VuforiaLocalizer
+ * @see VuforiaTrackableDefaultListener
+ * see  ftc_app/doc/tutorial/FTC_FieldCoordinateSystemDefinition.pdf
+ *
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
@@ -67,21 +88,48 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
+    AutonomousMecanum       auto = new AutonomousMecanum();
     private ElapsedTime     runtime = new ElapsedTime();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.4;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 6.0;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.15;
-    static final double     TURN_SPEED              = 0.15;
+    OpenGLMatrix lastLocation = null;
 
-    double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
-    final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
+    /**
+     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
+     * localization engine.
+     */
+    VuforiaLocalizer vuforia;
 
     @Override
     public void runOpMode() {
+
+        /*
+         * To start up Vuforia, tell it the view that we wish to use for camera monitor (on the RC phone);
+         * If no camera monitor is desired, use the parameterless constructor instead (commented out below).
+         */
+        //int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        // OR...  Do Not Activate the Camera Monitor View, to save power
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = auto.vuforiaLicenseKey_MortonFTC;
+
+        /*
+         * We also indicate which camera on the RC that we wish to use.
+         * Here we chose the back (HiRes) camera (for greater range), but
+         * for a competition robot, the front camera might be more convenient.
+         */
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        /**
+         * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
+         * in this data set: all three of the VuMarks in the game were created from this one template,
+         * but differ in their instance id information.
+         * @see VuMarkInstanceId
+         */
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
 
         /*
          * Initialize the drive system variables.
@@ -122,66 +170,120 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
 
 
         // Wait for the game to start (driver presses PLAY)
+        telemetry.addData(">", "Press Play to start");
+        telemetry.update();
         waitForStart();
 
-        robot.swingServo.setPosition(0.85);
-        robot.ballArmServo.setPosition(0.2);
-        sleep(500);
-        robot.ballArmServo.setPosition(0.08);
-        sleep(500);
 
-        int redValue = robot.colorSensor.red();
-        int blueValue = robot.colorSensor.blue();
+        relicTrackables.activate();
 
-        boolean isRed = (redValue > blueValue) ? true : false;
-        String color = (isRed) ? "red" : "blue";
+        while (opModeIsActive()) {
 
-        telemetry.addData("color", color);
-        telemetry.addData("red", redValue);
-        telemetry.addData("blue", blueValue);
-        telemetry.update();
+            /**
+             * See if any of the instances of {@link relicTemplate} are currently visible.
+             * {@link RelicRecoveryVuMark} is an enum which can have the following values:
+             * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
+             * UNKNOWN will be returned by {@link RelicRecoveryVuMark#from(VuforiaTrackable)}.
+             */
+            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
 
-        if (isRed) {
-            robot.swingServo.setPosition(0.6);
-        } else {
-            robot.swingServo.setPosition(1.2);
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN || (runtime.seconds() >= 15)) {
+
+                /* Found an instance of the template or 15 seconds has elapsed */
+                telemetry.addData("VuMark", "%s visible", vuMark);
+
+
+                /** BALL KNOCK OFF SEQUENCE **/
+                robot.swingServo.setPosition(0.85);
+                robot.ballArmServo.setPosition(0.2);
+                sleep(500);
+                robot.ballArmServo.setPosition(0.08);
+                sleep(500);
+
+                // determine ball color
+                int redValue = robot.colorSensor.red();
+                int blueValue = robot.colorSensor.blue();
+
+                boolean isRed = (redValue > blueValue) ? true : false;
+                String color = (isRed) ? "red" : "blue";
+
+                telemetry.addData("color", color);
+                telemetry.addData("red", redValue);
+                telemetry.addData("blue", blueValue);
+                telemetry.update();
+
+                // knock ball off
+                if (isRed) {
+                    robot.swingServo.setPosition(0.6);
+                } else {
+                    robot.swingServo.setPosition(1.2);
+                }
+
+                // reset ball knock off servos
+                sleep(250);
+                robot.ballArmServo.setPosition(0.4);
+                sleep(250);
+                robot.swingServo.setPosition(0.5);
+                sleep(250);
+                robot.ballArmServo.setPosition(0.5);
+
+
+                /** TRAVEL SEQUENCE **/
+                if (vuMark == RelicRecoveryVuMark.UNKNOWN)           {
+                    vuMark = RelicRecoveryVuMark.CENTER;
+                }
+                double vuTravel = 0;
+                switch (vuMark) {
+                    case LEFT:
+                        vuTravel = 28.95;
+                        break;
+                    case CENTER:
+                        vuTravel = 36.58;
+                        break;
+                    case RIGHT:
+                        vuTravel = 44.21;
+                        break;
+                }
+
+                // Step through each leg of the path,
+                // Note: Reverse movement is obtained by setting a negative distance (not speed)
+                encoderDrive(auto.DRIVE_SPEED,  vuTravel,  vuTravel, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+                sleep(500);
+                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                sleep(250);
+                encoderTilt(0.5, 42, 15.0);
+                sleep(250);
+                encoderDrive(auto.DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+                sleep(250);
+
+                // Move both servos to new position.  Assume servos are mirror image of each other.
+                //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
+                robot.leftGripper.setPosition(auto.leftGripperPosition );//(robot.MID_SERVO +.02 )
+                robot.rightGripper.setPosition(auto.rightGripperPosition);//(robot.MID_SERVO - .02)
+                sleep(500);
+                encoderDrive(auto.DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+
+        //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
+        //        robot.rightClaw.setPosition(0.0);
+                sleep(30000);     // pause for servos to move
+
+                telemetry.addData("Path", "Complete");
+                telemetry.update();
+
+            }
+            else {
+                telemetry.addData("VuMark", "not visible");
+            }
+
+            telemetry.update();
         }
 
-        sleep(250);
-        robot.ballArmServo.setPosition(0.4);
-        sleep(250);
-        robot.swingServo.setPosition(0.5);
-        sleep(250);
-        robot.ballArmServo.setPosition(0.5);
 
-        // Step through each leg of the path,
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  36.58,  36.58, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
-        sleep(500);
-        encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
-        sleep(250);
-        encoderTilt(0.5, 42, 15.0);
-        sleep(250);
-        encoderDrive(DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
-        sleep(250);
-
-        // Move both servos to new position.  Assume servos are mirror image of each other.
-        //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-        robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
-        robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
-        sleep(500);
-        encoderDrive(DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
-
-//        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
-//        robot.rightClaw.setPosition(0.0);
-        sleep(30000);     // pause for servos to move
-
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
     }
 
+
     /*
-     *  Method to perfmorm a relative move, based on encoder counts.
+     *  Method to perform a relative move, based on encoder counts.
      *  Encoders are not reset as the move is based on the current position.
      *  Move will stop if any of three conditions occur:
      *  1) Move gets to the desired position
@@ -203,10 +305,10 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
+            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
             robot.leftFrontDrive.setTargetPosition(newLeftFrontTarget);
             robot.rightFrontDrive.setTargetPosition(newRightFrontTarget);
             robot.leftRearDrive.setTargetPosition(newLeftRearTarget);
