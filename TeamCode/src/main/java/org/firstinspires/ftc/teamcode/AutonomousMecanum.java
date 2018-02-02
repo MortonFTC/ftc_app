@@ -52,9 +52,11 @@ public class AutonomousMecanum
     public static final double     DRIVE_SPEED             = 0.15;
     public static final double     TURN_SPEED              = 0.15;
 
-    public double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
-    public final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
+    public double          clawOffset_glyph  = 0.0;                  // Servo mid position
+    public final double    CLAW_SPEED_glyph  = 0.02;                 // sets rate to move servo
 
+    public double          leftGripperPosition  = 0.75;                  // Servo mid position
+    public final double    rightGripperPosition  = 0.375;                 // sets rate to move servo
 
     /* Constructor */
     public AutonomousMecanum(){

@@ -35,6 +35,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
  * It uses the common Pushbot hardware class to define the drive on the robot.
@@ -68,21 +82,70 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
+    AutonomousMecanum       auto = new AutonomousMecanum();
     private ElapsedTime     runtime = new ElapsedTime();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.4;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 6.0;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.15;
-    static final double     TURN_SPEED              = 0.15;
+    OpenGLMatrix lastLocation = null;
 
-    double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
-    final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
+    /**
+     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
+     * localization engine.
+     */
+    VuforiaLocalizer vuforia;
 
     @Override
     public void runOpMode() {
+
+        /*
+         * To start up Vuforia, tell it the view that we wish to use for camera monitor (on the RC phone);
+         * If no camera monitor is desired, use the parameterless constructor instead (commented out below).
+         */
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        // OR...  Do Not Activate the Camera Monitor View, to save power
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        /*
+         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+         * web site at https://developer.vuforia.com/license-manager.
+         *
+         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+         * random data. As an example, here is a example of a fragment of a valid key:
+         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+         * Once you've obtained a license key, copy the string from the Vuforia web site
+         * and paste it in to your code onthe next line, between the double quotes.
+         */
+
+        // license key added on 01/28/18 (registered to mortonftc for mecanumRobot) https://developer.vuforia.com/targetmanager/licenseManager/licenseListingDetails
+        parameters.vuforiaLicenseKey = "AeWrHWf/////AAAAmZG3057lc0JXoVs+HjtHkjZyYL2/IQH4DPGcMKxDXU12F688beSRkSeE6Oz1nH1imNIbBvdwCWFtpqBTu9aqKnlQ9XE3cDLcuUa6/iv0yK3oKy/4p+C1KqltmtvLTda0rgoW8mVcohX38181Apke+iCMjogFT0FHT+3o36MrhYRT03H7Al4Ynqd09uLIGiCXwffq0Ws+YJvWbgbw3Upvjn+Rpbh/xUckxiqFFfU/5j5uCdjMFvUn3YLrLelYAKsaKLKTfMy+OeMbv8wd9By4EjM+A9RB7HKVv3pNZX8fOD9MuSh8y9zV+ZZi+EzcAzJehi9M4mLq7qAmjUgs4qOvtafr6L2dav8Vfw8TarFoD1mk";
+
+        /*
+         * We also indicate which camera on the RC that we wish to use.
+         * Here we chose the back (HiRes) camera (for greater range), but
+         * for a competition robot, the front camera might be more convenient.
+         */
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        /**
+         * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
+         * in this data set: all three of the VuMarks in the game were created from this one template,
+         * but differ in their instance id information.
+         * @see VuMarkInstanceId
+         */
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+        telemetry.addData(">", "Press Play to start");
+        telemetry.update();
+        waitForStart();
+
+
+
 
         /*
          * Initialize the drive system variables.
@@ -122,64 +185,100 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
         telemetry.update();
 
 
-        // Wait for the game to start (driver presses PLAY)
-        waitForStart();
+/*        // Wait for the game to start (driver presses PLAY)
+        waitForStart();*/
 
-        robot.swingServo.setPosition(0.85);
-        robot.ballArmServo.setPosition(0.2);
-        sleep(500);
-        robot.ballArmServo.setPosition(0.08);
-        sleep(500);
 
-        int redValue = robot.colorSensor.red();
-        int blueValue = robot.colorSensor.blue();
+        relicTrackables.activate();
 
-        boolean isRed = (redValue > blueValue) ? true : false;
-        String color = (isRed) ? "red" : "blue";
+        while (opModeIsActive()) {
 
-        telemetry.addData("color", color);
-        telemetry.addData("red", redValue);
-        telemetry.addData("blue", blueValue);
-        telemetry.update();
+            /**
+             * See if any of the instances of {@link relicTemplate} are currently visible.
+             * {@link RelicRecoveryVuMark} is an enum which can have the following values:
+             * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
+             * UNKNOWN will be returned by {@link RelicRecoveryVuMark#from(VuforiaTrackable)}.
+             */
+            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
 
-        if (isRed) {
-            robot.swingServo.setPosition(1.2);
-        } else {
-            robot.swingServo.setPosition(0.6);
+                /* Found an instance of the template. In the actual game, you will probably
+                 * loop until this condition occurs, then move on to act accordingly depending
+                 * on which VuMark was visible. */
+                telemetry.addData("VuMark", "%s visible", vuMark);
+
+
+
+                robot.swingServo.setPosition(0.85);
+                robot.ballArmServo.setPosition(0.2);
+                sleep(500);
+                robot.ballArmServo.setPosition(0.08);
+                sleep(500);
+
+                int redValue = robot.colorSensor.red();
+                int blueValue = robot.colorSensor.blue();
+
+                boolean isRed = (redValue > blueValue) ? true : false;
+                String color = (isRed) ? "red" : "blue";
+
+                telemetry.addData("color", color);
+                telemetry.addData("red", redValue);
+                telemetry.addData("blue", blueValue);
+                telemetry.update();
+
+                if (isRed) {
+                    robot.swingServo.setPosition(1.2);
+                } else {
+                    robot.swingServo.setPosition(0.6);
+                }
+
+                sleep(250);
+                robot.ballArmServo.setPosition(0.4);
+                sleep(250);
+                robot.swingServo.setPosition(0.5);
+                sleep(250);
+                robot.ballArmServo.setPosition(0.5);
+
+                // Step through each leg of the path,
+                // Note: Reverse movement is obtained by setting a negative distance (not speed)
+                encoderDrive(auto.DRIVE_SPEED,  -34.67,  -34.67, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+                sleep(500);
+                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                sleep(250);
+                encoderTilt(0.5, 42, 15.0);
+                sleep(250);
+                encoderDrive(auto.DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+                sleep(250);
+
+                // Move both servos to new position.  Assume servos are mirror image of each other.
+                //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
+                robot.leftGripper.setPosition(auto.leftGripperPosition);//(robot.MID_SERVO +.02 )
+                robot.rightGripper.setPosition(auto.rightGripperPosition);//(robot.MID_SERVO - .02)
+                sleep(500);
+                encoderDrive(auto.DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+
+        //        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
+        //        robot.rightClaw.setPosition(0.0);
+                sleep(30000);     // pause for servos to move
+
+                telemetry.addData("Path", "Complete");
+                telemetry.update();
+
+            }
+            else {
+                telemetry.addData("VuMark", "not visible");
+            }
+
+            telemetry.update();
         }
 
-        sleep(250);
-        robot.ballArmServo.setPosition(0.4);
-        sleep(250);
-        robot.swingServo.setPosition(0.5);
-        sleep(250);
-        robot.ballArmServo.setPosition(0.5);
 
-        // Step through each leg of the path,
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  -34.67,  -34.67, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
-        sleep(500);
-        encoderDrive(TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
-        sleep(250);
-        encoderTilt(0.5, 42, 15.0);
-        sleep(250);
-        encoderDrive(DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
-        sleep(250);
-
-        // Move both servos to new position.  Assume servos are mirror image of each other.
-        //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-        robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
-        robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
-        sleep(500);
-        encoderDrive(DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
-
-//        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
-//        robot.rightClaw.setPosition(0.0);
-        sleep(30000);     // pause for servos to move
-
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
     }
+
+    String format(OpenGLMatrix transformationMatrix) {
+        return (transformationMatrix != null) ? transformationMatrix.formatAsTransform() : "null";
+    }
+
 
     /*
      *  Method to perfmorm a relative move, based on encoder counts.
@@ -204,10 +303,10 @@ public class MecanumAutoDriveByEncoder_Linear_RedShort extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
+            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * auto.COUNTS_PER_INCH);
+            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * auto.COUNTS_PER_INCH);
             robot.leftFrontDrive.setTargetPosition(newLeftFrontTarget);
             robot.rightFrontDrive.setTargetPosition(newRightFrontTarget);
             robot.leftRearDrive.setTargetPosition(newLeftRearTarget);

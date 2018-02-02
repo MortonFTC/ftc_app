@@ -173,8 +173,8 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
         // Move both servos to new position.  Assume servos are mirror image of each other.
         //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-        robot.leftGripper.setPosition(0.625 );//(robot.MID_SERVO +.02 )
-        robot.rightGripper.setPosition(0.375);//(robot.MID_SERVO - .02)
+        robot.leftGripper.setPosition(auto.leftGripperPosition);//(robot.MID_SERVO +.02 )
+        robot.rightGripper.setPosition(auto.rightGripperPosition);//(robot.MID_SERVO - .02)
         sleep(500);
         encoderDrive(auto.DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
 
