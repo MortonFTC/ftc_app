@@ -255,7 +255,7 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
                 sleep(250);
                 encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
                 sleep(250);
-                encoderTilt(0.5, 42, 15.0);
+                encoderTilt(0.5, 40, 15.0);
                 sleep(250);
                 encoderDrive(auto.DRIVE_SPEED, 4.803, 4.803, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
                 sleep(250);
