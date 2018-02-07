@@ -187,7 +187,7 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
              */
             RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
 
-            if (vuMark != RelicRecoveryVuMark.UNKNOWN || (runtime.seconds() >= 15)) {
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN || (runtime.seconds() >= AutonomousMecanum.vuMarkTimeout)) {
 
                 /* Found an instance of the template or 15 seconds has elapsed */
                 telemetry.addData("VuMark", "%s visible", vuMark);

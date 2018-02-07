@@ -50,6 +50,8 @@ public class AutonomousMecanum
     public static double          leftGripperPosition  = 0.75;                  // Servo mid position
     public static final double    rightGripperPosition  = 0.375;                 // sets rate to move servo
 
+    public static double          vuMarkTimeout = 10;
+
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
      * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
