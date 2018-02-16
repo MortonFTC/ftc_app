@@ -173,7 +173,7 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
         waitForStart();
-
+        runtime.reset();
 
         relicTrackables.activate();
 
@@ -235,13 +235,13 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
                 double vuTravel = 0;
                 switch (vuMark) {
                     case LEFT:
-                        vuTravel = 5.2;
+                        vuTravel = 3.2;
                         break;
                     case CENTER:
-                        vuTravel = 12.83; //10.92
+                        vuTravel = 10.83; //10.92
                         break;
                     case RIGHT:
-                        vuTravel = 20.46;
+                        vuTravel = 18.46;
                         break;
                 }
 
@@ -249,11 +249,11 @@ public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
                 // Note: Reverse movement is obtained by setting a negative distance (not speed)
                 encoderDrive(auto.DRIVE_SPEED,  25.0, 25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
                 sleep(500);
-                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                encoderDrive(auto.TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
                 sleep(250);
                 encoderDrive(auto.DRIVE_SPEED,   vuTravel, vuTravel, 15.0);
                 sleep(250);
-                encoderDrive(auto.TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
                 sleep(250);
                 encoderTilt(0.5, 40, 15.0);
                 sleep(250);

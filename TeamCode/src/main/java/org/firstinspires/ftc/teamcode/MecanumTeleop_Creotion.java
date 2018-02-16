@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import static android.R.attr.left;
@@ -64,6 +65,7 @@ public class MecanumTeleop_Creotion extends OpMode{
 
     double          clawOffset_relic  = 0.0 ;                  // Servo mid position
     final double    CLAW_SPEED_relic  = 0.01 ;                 // sets rate to move servo
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -224,7 +226,6 @@ public class MecanumTeleop_Creotion extends OpMode{
         telemetry.addData("g_right_y", "%.2f", g_right_y);
         telemetry.addData("g_button_y", "", g_button_y);
         telemetry.addData("g_button_a", "", g_button_a);
-        telemetry.addData("g_bumper_left", "", g_bumper_left); // cuts off after this
 
     }
 

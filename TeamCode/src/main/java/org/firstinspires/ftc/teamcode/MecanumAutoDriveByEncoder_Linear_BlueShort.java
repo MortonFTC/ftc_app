@@ -173,6 +173,7 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
         waitForStart();
+        runtime.reset();
 
 
         relicTrackables.activate();
@@ -235,13 +236,15 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
                 double vuTravel = 0;
                 switch (vuMark) {
                     case LEFT:
-                        vuTravel = 28.95;
+                        vuTravel = 26.95;
                         break;
                     case CENTER:
-                        vuTravel = 36.58;
+                        vuTravel = 34.58;
                         break;
                     case RIGHT:
-                        vuTravel = 44.21;
+                        vuTravel = 42.21
+                        ;
+                        //.21;
                         break;
                 }
 
