@@ -135,7 +135,7 @@ public class MecanumTeleop_Creotion extends OpMode{
 
         // gunner
         g_left_y = -gamepad2.left_stick_y;
-        g_right_y = -gamepad2.right_stick_y;
+        g_right_y = gamepad2.right_stick_y;
         g_button_y = gamepad2.y;
         g_button_a = gamepad2.a;
         g_bumper_left = gamepad2.left_bumper;
@@ -171,12 +171,21 @@ public class MecanumTeleop_Creotion extends OpMode{
         robot.rightRearDrive.setPower(rRearDrive);
 
         robot.armTilt.setPower(g_left_y);
-        robot.armExtender.setPower(g_right_y);
+
+        telemetry.addData("maxVertUpDD", robot.maxVertUpDD.getState());
+        telemetry.addData("maxVertDownDD", robot.maxVertDownDD.getState());
+        telemetry.addData("maxTiltDD", robot.maxTiltDD.getState());
+
+        if (!robot.maxTiltDD.getState() && g_right_y > 0) {
+            robot.armExtender.setPower(0);
+        } else {
+            robot.armExtender.setPower(g_right_y);
+        }
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (g_button_y)
+        if (g_button_y && robot.maxVertUpDD.getState())
             robot.armLift.setPower(robot.ARM_UP_POWER);
-        else if (g_button_a)
+        else if (g_button_a && robot.maxVertDownDD.getState())
             robot.armLift.setPower(robot.ARM_DOWN_POWER);
         else
             robot.armLift.setPower(0.0);
