@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 
 @TeleOp(name = "Lamgunana_V1",group = "mortonElements")
@@ -32,6 +33,13 @@ public class Lamgunana_V1 extends LinearOpMode
         gripperServo1 = hardwareMap.servo.get("gripperServo1");
         gripperServo2 = hardwareMap.servo.get("gripperServo2");
 
+        final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
+
+        double          clawOffset  = 0.0 ;                  // Servo mid position
+        final double    MID_SERVO_claw       =  0.5 ;
+        double          armOffset  = 0.0 ;                  // Servo mid position
+        final double    MID_SERVO_arm       =  0.5 ;
+
         waitForStart();
 
         while(opModeIsActive())
@@ -39,11 +47,28 @@ public class Lamgunana_V1 extends LinearOpMode
             motorLeft.setPower(-gamepad1.left_stick_y);
             motorRight.setPower(-gamepad1.right_stick_y);
 
-            if(gamepad2.a)
-            {
-                armServo1.setPosition(0.5);
-                armServo2.setPosition(-0.5);
-            }
+            // Use gamepad left & right Bumpers to open and close the claw
+            if (gamepad2.right_bumper)
+                armOffset += CLAW_SPEED;
+            else if (gamepad2.left_bumper)
+                armOffset -= CLAW_SPEED;
+
+            // Move both servos to new position.  Assume servos are mirror image of each other.
+            clawOffset = Range.clip(clawOffset, -0.5, 0.5);
+            armServo1.setPosition(MID_SERVO_arm + clawOffset);
+            armServo2.setPosition(MID_SERVO_arm - clawOffset);
+
+
+            // Use gamepad left & right Bumpers to open and close the claw
+            if (gamepad2.right_bumper)
+                clawOffset += CLAW_SPEED;
+            else if (gamepad2.left_bumper)
+                clawOffset -= CLAW_SPEED;
+
+            // Move both servos to new position.  Assume servos are mirror image of each other.
+            clawOffset = Range.clip(clawOffset, -0.5, 0.5);
+            gripperServo1.setPosition(MID_SERVO_claw + clawOffset);
+            gripperServo2.setPosition(MID_SERVO_claw - clawOffset);
 
             idle();
         }
