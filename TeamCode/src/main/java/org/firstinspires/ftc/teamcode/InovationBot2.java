@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "Conveyor Belt Triggers", group = "mortonElements")
-
+@TeleOp(name = "Conveyor Belt Triggers2", group = "mortonElements")
+@Disabled
 public class InovationBot2 extends LinearOpMode
 {
     private DcMotor motorLeftDrive;

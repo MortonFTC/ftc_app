@@ -9,12 +9,13 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath 'com.android.tools.build:gradle:3.2.0'
     }
 }
 
 
-
-repositories {
-    google()
+allprojects {
+    repositories {
+        google()
+    }
 }

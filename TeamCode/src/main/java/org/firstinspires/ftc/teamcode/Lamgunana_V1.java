@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 
 
 @TeleOp(name = "Lamgunana_V1",group = "mortonElements")
+@Disabled
 public class Lamgunana_V1 extends LinearOpMode
 {
     private DcMotor motorLeft;
@@ -33,7 +35,7 @@ public class Lamgunana_V1 extends LinearOpMode
         gripperServo1 = hardwareMap.servo.get("gripperServo1");
         gripperServo2 = hardwareMap.servo.get("gripperServo2");
 
-        final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
+        final double    CLAW_SPEED  = 0.005 ;                 // sets rate to move servo
 
         double          clawOffset  = 0.0 ;                  // Servo mid position
         final double    MID_SERVO_claw       =  0.5 ;
