@@ -27,13 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.year_one;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -83,8 +82,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  */
 
 //@Disabled
-@Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Short)", group="Auto")
-public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
+@Autonomous(name="Mecanum: Auto Drive By Encoder (Red Long)", group="Auto")
+public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
@@ -215,9 +214,9 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
 
                 // knock ball off
                 if (isRed) {
-                    robot.swingServo.setPosition(0.6);
-                } else {
                     robot.swingServo.setPosition(1.2);
+                } else {
+                    robot.swingServo.setPosition(0.6);
                 }
 
                 // reset ball knock off servos
@@ -236,32 +235,34 @@ public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
                 double vuTravel = 0;
                 switch (vuMark) {
                     case LEFT:
-                        vuTravel = 26.95;
+                        vuTravel = -18.55;
                         break;
                     case CENTER:
-                        vuTravel = 34.58;
+                        vuTravel = -11.92;
                         break;
                     case RIGHT:
-                        vuTravel = 42.21
-                        ;
-                        //.21;
+                        vuTravel = -3.29;
                         break;
                 }
 
                 // Step through each leg of the path,
                 // Note: Reverse movement is obtained by setting a negative distance (not speed)
-                encoderDrive(auto.DRIVE_SPEED,  vuTravel,  vuTravel, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+                encoderDrive(auto.DRIVE_SPEED,  -25.0, -25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
                 sleep(500);
+                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                sleep(250);
+                encoderDrive(auto.DRIVE_SPEED,   vuTravel, vuTravel, 15.0);
+                sleep(250);
                 encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
                 sleep(250);
                 encoderTilt(0.5, 40, 15.0);
                 sleep(250);
-                encoderDrive(auto.DRIVE_SPEED, 6.05, 6.05, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
+                encoderDrive(auto.DRIVE_SPEED, 4.803, 4.803, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout
                 sleep(250);
 
                 // Move both servos to new position.  Assume servos are mirror image of each other.
                 //clawOffset_glyph = Range.clip(clawOffset_glyph, -0.0625, .125);//-0.2,-0.05
-                robot.leftGripper.setPosition(auto.leftGripperPosition );//(robot.MID_SERVO +.02 )
+                robot.leftGripper.setPosition(auto.leftGripperPosition);//(robot.MID_SERVO +.02 )
                 robot.rightGripper.setPosition(auto.rightGripperPosition);//(robot.MID_SERVO - .02)
                 sleep(500);
                 encoderDrive(auto.DRIVE_SPEED, -4, -4, 15.0);  // S3: Reverse 24 Inches with 15 Sec timeout

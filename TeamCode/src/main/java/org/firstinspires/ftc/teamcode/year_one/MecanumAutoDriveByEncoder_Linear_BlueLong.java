@@ -27,13 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.year_one;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -83,8 +82,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  */
 
 //@Disabled
-@Autonomous(name="Mecanum: Auto Drive By Encoder (Red Long)", group="Auto")
-public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
+@Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Long)", group="Auto")
+public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
@@ -175,7 +174,6 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-
         relicTrackables.activate();
 
         while (opModeIsActive()) {
@@ -215,9 +213,9 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
 
                 // knock ball off
                 if (isRed) {
-                    robot.swingServo.setPosition(1.2);
-                } else {
                     robot.swingServo.setPosition(0.6);
+                } else {
+                    robot.swingServo.setPosition(1.2);
                 }
 
                 // reset ball knock off servos
@@ -236,21 +234,21 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
                 double vuTravel = 0;
                 switch (vuMark) {
                     case LEFT:
-                        vuTravel = -18.55;
+                        vuTravel = 3.2;
                         break;
                     case CENTER:
-                        vuTravel = -11.92;
+                        vuTravel = 10.83; //10.92
                         break;
                     case RIGHT:
-                        vuTravel = -3.29;
+                        vuTravel = 18.46;
                         break;
                 }
 
                 // Step through each leg of the path,
                 // Note: Reverse movement is obtained by setting a negative distance (not speed)
-                encoderDrive(auto.DRIVE_SPEED,  -25.0, -25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
+                encoderDrive(auto.DRIVE_SPEED,  25.0, 25.0, 15.0);  // S1: Forward 47 Inches with 15 Sec timeout
                 sleep(500);
-                encoderDrive(auto.TURN_SPEED,   -21.7, 21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
+                encoderDrive(auto.TURN_SPEED,   21.7, -21.7, 15.0);  // S2: Turn Right 12 Inches with 15 Sec timeout
                 sleep(250);
                 encoderDrive(auto.DRIVE_SPEED,   vuTravel, vuTravel, 15.0);
                 sleep(250);
@@ -285,6 +283,7 @@ public class MecanumAutoDriveByEncoder_Linear_RedLong extends LinearOpMode {
 
 
     }
+
 
 
     /*

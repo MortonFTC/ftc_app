@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.year_two;
 
 import android.graphics.Color;
 
@@ -56,19 +56,17 @@ import static org.firstinspires.ftc.robotcontroller.external.samples.HardwarePus
 public class HardwareMecanum
 {
 
-    /* Expansion Hub 2 */
-
     // Motors
-    public DcMotor  leftFrontDrive   = null; // Port 0: REV Robotics HD Hex motor
-    public DcMotor  rightFrontDrive  = null; // Port 1: REV Robotics HD Hex motor
-    public DcMotor  leftRearDrive    = null; // Port 2: REV Robotics HD Hex motor
-    public DcMotor  rightRearDrive   = null; // Port 3: REV Robotics HD Hex motor
+    public DcMotor  leftFrontDrive   = null;
+    public DcMotor  rightFrontDrive  = null;
+    public DcMotor  leftRearDrive    = null;
+    public DcMotor  rightRearDrive   = null;
 
     // Servos
-    public Servo leftGripper    = null; // Port 0: Servo
-    public Servo rightGripper   = null; // Port 1: Servo
-    public Servo relicPivot     = null; // Port 2: Servo
-    public Servo relicGripper   = null; // Port 3: Servo
+    public Servo leftGripper    = null;
+    public Servo rightGripper   = null;
+    public Servo relicPivot     = null;
+    public Servo relicGripper   = null; 
 
     // I2C Bus 0
     public Gyroscope imu    = null; // Port 0: REV Expansion Hub IMU

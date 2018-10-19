@@ -27,16 +27,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.year_two;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
-
-import static android.R.attr.left;
-import static android.R.attr.right;
 
 /**
  * This file provides basic Telop driving for a Mecanum robot.
@@ -54,7 +49,7 @@ import static android.R.attr.right;
 
 @TeleOp(name="Mecanum: Teleop Creotion", group="Manual")
 
-public class MecanumTeleop_Creotion extends OpMode{
+public class Teleop2018 extends OpMode{
 
     /* Declare OpMode members. */
     HardwareMecanum robot       = new HardwareMecanum(); // use the class created to define a robot's hardware
