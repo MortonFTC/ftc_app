@@ -31,17 +31,12 @@ package org.firstinspires.ftc.teamcode.year_two;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Gyroscope;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcontroller.external.samples.SensorColor;
-
-import static org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot.MID_SERVO;
 
 /**
  * This is NOT an opmode.
@@ -61,58 +56,38 @@ public class HardwareMecanum
     public DcMotor  rightFrontDrive  = null;
     public DcMotor  leftRearDrive    = null;
     public DcMotor  rightRearDrive   = null;
+    public DcMotor armLower = null;
 
     // Servos
-    public Servo leftGripper    = null;
-    public Servo rightGripper   = null;
-    public Servo relicPivot     = null;
-    public Servo relicGripper   = null; 
+    public Servo armMid = null;
+    public Servo armUpper = null;
+    public Servo singleMastDrive = null;
+    public Servo hook = null;
+    public Servo doorLeft = null;
+    public Servo doorRight = null;
+    public Servo doubleMastDrive1 = null;
+    public Servo doubleMastDrive2 = null;
 
-    // I2C Bus 0
-    public Gyroscope imu    = null; // Port 0: REV Expansion Hub IMU
+    public CRServo brush = null;
 
-
-    /* Expansion Hub 3 */
-
-    // Motors
-    public DcMotor  armTilt     = null; // Port 0: REV Robotics HD Hex motor
-    public DcMotor  armExtender = null; // Port 1: REV Robotics HD Hex motor
-    public DcMotor  armLift     = null; // Port 2: REV Robotics Core Hex motor
-
-    // Servos
-    public Servo ballArmServo   = null; // Port 0: Servo
-    public Servo swingServo     = null; // Port 1: Servo
-
-    // Digital Devices
-    public DigitalChannel maxVertUpDD   = null; // Port 1: Digital Device
-    public DigitalChannel maxVertDownDD = null; // Port 3: Digital Device
-    public DigitalChannel maxTiltDD     = null; // Port 5: Digital Device
-
-    // I2C Bus 0
-    public Gyroscope imu1           = null; // Port 0: REV Expansion Hub IMU
+    //Misc
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
 
 
-    /* constants */
+    /* constants
     public static final double MID_SERVO       =  0.5;
     public static final double ARM_UP_POWER    = -1.0;
     public static final double ARM_DOWN_POWER  = 1.0;
-
+*/
+    static final double     ARM_COUNTS_PER_MOTOR_REV    = 1300;    // eg: TETRIX Motor Encoder
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private ElapsedTime period  = new ElapsedTime();
 
-    /* Constructor */
-    public HardwareMecanum(){
-
-    }
-
     /* Initialize standard Hardware interfaces */
-    public void init(HardwareMap ahwMap) {
-        // Save reference to Hardware map
-        hwMap = ahwMap;
-
+    public void init(HardwareMap hwMap) {
+        this.hwMap = hwMap;
 
         // Define and Initialize Motors
 
@@ -122,58 +97,22 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
-        // Expansion Hub (Address: 3)
-        armTilt = hwMap.get(DcMotor.class, "armTilt"); //
-        armExtender  = hwMap.get(DcMotor.class, "armExtender"); // clockwise = up/out
-        armLift = hwMap.get(DcMotor.class, "armLift"); // counter-clockwise = up
+        armMid = hwMap.get(Servo.class, "armMid");
+        armUpper = hwMap.get(Servo.class, "armUpper");
+        singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
+        doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
+        doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");
+        hook = hwMap.get(Servo.class, "hook");
+        brush = hwMap.get(CRServo.class, "brush");
+        doorLeft = hwMap.get(Servo.class, "doorLeft");
+        doorRight = hwMap.get(Servo.class, "doorRight");
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
         leftRearDrive.setPower(0);
         rightRearDrive.setPower(0);
-        armTilt.setPower(0);
-        armExtender.setPower(0);
-        armLift.setPower(0);
 
-
-        // Define and initialize ALL installed servos.
-
-        // Expansion Hub (Address: 2)
-        leftGripper = hwMap.get(Servo.class, "leftGripper"); // port 0
-        rightGripper = hwMap.get(Servo.class, "rightGripper"); // port 1
-        relicPivot  = hwMap.get(Servo.class, "relicPivot"); // port 2
-        relicGripper = hwMap.get(Servo.class, "relicGripper"); // port 3
-
-        // Expansion Hub (Address: 3)
-        ballArmServo = hwMap.get(Servo.class, "ballArmServo"); // port 0
-        swingServo = hwMap.get(Servo.class, "swingServo"); // port 1
-
-        leftGripper.setPosition(MID_SERVO);
-        rightGripper.setPosition(MID_SERVO);
-        relicPivot.setPosition(MID_SERVO);
-        relicGripper.setPosition(MID_SERVO);
-        ballArmServo.setPosition(MID_SERVO);
-        swingServo.setPosition(0.49);
-
-
-        // Define and initialize ALL installed digital devices.
-
-        // Expansion Hub (Address: 3)
-        maxVertUpDD = hwMap.get(DigitalChannel.class, "maxVertUpDD");
-        maxVertDownDD = hwMap.get(DigitalChannel.class, "maxVertDownDD");
-        maxTiltDD = hwMap.get(DigitalChannel.class, "maxTiltDD");
-
-
-        // Define and initialize ALL installed sensors.
-
-        // Expansion Hub (Address: 2)
-        imu = hwMap.get(Gyroscope.class, "imu");
-
-        // Expansion Hub (Address: 3)
-        imu1 = hwMap.get(Gyroscope.class, "imu 1");
-        colorSensor = hwMap.get(ColorSensor.class, "colorSensor"); // port 1
-
-
+        colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
     }
 }

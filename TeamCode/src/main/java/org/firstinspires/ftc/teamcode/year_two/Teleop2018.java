@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file provides basic Telop driving for a Mecanum robot.
@@ -47,65 +46,45 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Mecanum: Teleop Creotion", group="Manual")
+@TeleOp(name="Teleop 2018", group="Manual")
 
-public class Teleop2018 extends OpMode{
+public class Teleop2018 extends OpMode {
 
-    /* Declare OpMode members. */
-    HardwareMecanum robot       = new HardwareMecanum(); // use the class created to define a robot's hardware
-    // could also use HardwarePushbotMatrix class.
+    //TODO Track arm 1 movement with encoder
+    HardwareMecanum robot = new HardwareMecanum();
 
-    double          clawOffset_glyph  = 0.0 ;                  // Servo mid position
-    final double    CLAW_SPEED_glyph  = 0.02 ;                 // sets rate to move servo
+    public double ARM_MID_STARTING_POS;
+    //public final double ARM_MID_MAX_POS = 1; //TODO
+    //public final double ARM_MID_MIN_POS = 1;
+    public double armMidOffset = 0;
 
-    double          clawOffset_relic  = 0.0 ;                  // Servo mid position
-    final double    CLAW_SPEED_relic  = 0.01 ;                 // sets rate to move servo
+    public double ARM_UPPER_STARTING_POS;
+    //public final double ARM_UPPER_MAX_POS = 1; //TODO
+    //public final double ARM_UPPER_MIN_POS = 1;
+    public double armUpperOffset = 0;
 
+    public double RATE_OF_CHANGE = .005;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    public final double BRUSH_SPEED = 1; //TODO
+
+    public boolean doorClosed = true;
+
     @Override
     public void init() {
-        /* Initialize the hardware variables.
-         * The init() method of the hardware class does all the work here
-         */
         robot.init(hardwareMap);
 
-        // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "Hello Driver");    //
+        ARM_MID_STARTING_POS = robot.armMid.getPosition();
+        ARM_UPPER_STARTING_POS = robot.armUpper.getPosition();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-
-        robot.swingServo.setPosition(0.5);
-        robot.ballArmServo.setPosition(.5);
-
-    }
-
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-    }
-
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
     @Override
     public void loop() {
-
-        // DECLARE CONTROLLER VARIABLES
-
         // pilot controller variables
         double p_left_y; // forward/reverse (left side)
         double p_right_y; // forward/reverse (right side)
         double p_left_x; // left/right shift
+        boolean p_left_bumper;
+        boolean p_right_bumper;
 
         // gunner controller variables
         double g_left_y; // armTilt
@@ -116,8 +95,8 @@ public class Teleop2018 extends OpMode{
         boolean g_bumper_right; // leftGripper/rightGripper (close)
         double g_trigger_left; // relicGripper (open)
         double g_trigger_right; // relicGripper (close)
-        boolean g_dpad_left; // relicPivot (turn CC)
-        boolean g_dpad_right; // relicPivot (turn C)
+        boolean g_dpad_up; // relicPivot (turn CC)
+        boolean g_dpad_down; // relicPivot (turn C)
 
 
         // ASSIGN CONTROLLER INPUTS TO VARIABLES
@@ -127,9 +106,12 @@ public class Teleop2018 extends OpMode{
         p_left_y = -gamepad1.left_stick_y * .75; // use multiple to adjust speed
         p_right_y = -gamepad1.right_stick_y * .75; // use multiple to adjust speed
         p_left_x = gamepad1.left_stick_x; // full speed
+        p_left_bumper = gamepad1.left_bumper;
+        p_right_bumper = gamepad1.right_bumper;
 
         // gunner
-        g_left_y = -gamepad2.left_stick_y;
+        g_left_y = gamepad2.left_stick_y;
+        //g_left_y = -gamepad2.left_stick_y;
         g_right_y = gamepad2.right_stick_y;
         g_button_y = gamepad2.y;
         g_button_a = gamepad2.a;
@@ -137,9 +119,8 @@ public class Teleop2018 extends OpMode{
         g_bumper_right = gamepad2.right_bumper;
         g_trigger_left = gamepad2.left_trigger;
         g_trigger_right = gamepad2.right_trigger;
-        g_dpad_left = gamepad2.dpad_left;
-        g_dpad_right = gamepad2.dpad_right;
-
+        g_dpad_up = gamepad2.dpad_up;
+        g_dpad_down = gamepad2.dpad_down;
 
         // DECLARE MOTOR VARIABLES
 
@@ -165,78 +146,65 @@ public class Teleop2018 extends OpMode{
         robot.leftRearDrive.setPower(lRearDrive);
         robot.rightRearDrive.setPower(rRearDrive);
 
-        robot.armTilt.setPower(g_left_y);
+        //Pick up and drop preset positions.
+        if (p_left_bumper)
+            pickUpPosition();
+        else if (p_right_bumper)
+            dropPosition();
 
-        telemetry.addData("maxVertUpDD", robot.maxVertUpDD.getState());
-        telemetry.addData("maxVertDownDD", robot.maxVertDownDD.getState());
-        telemetry.addData("maxTiltDD", robot.maxTiltDD.getState());
+        //Controlling the arms.
+        if (g_dpad_up)
+            armMidOffset += RATE_OF_CHANGE;
+        else if (g_dpad_down)
+            armMidOffset -= RATE_OF_CHANGE;
 
-        if (!robot.maxTiltDD.getState() && g_right_y > 0) {
-            robot.armExtender.setPower(0);
-        } else {
-            robot.armExtender.setPower(g_right_y);
+        if (g_right_y != 0)
+        {
+            armUpperOffset += (-g_right_y * .05);
         }
+        //armLower is controlled at bottom.
 
-        // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (g_button_y && robot.maxVertUpDD.getState())
-            robot.armLift.setPower(robot.ARM_UP_POWER);
-        else if (g_button_a && robot.maxVertDownDD.getState())
-            robot.armLift.setPower(robot.ARM_DOWN_POWER);
-        else
-            robot.armLift.setPower(0.0);
 
-        // GLYPH GRIPPER
-        // Use gamepad left & right Bumpers to open and close the claw
+        //Activating the brushes.
+        if (g_trigger_right > 0)
+            robot.brush.setPower(BRUSH_SPEED); //TODO Tweak to make sure it's going the right direction
+        else if (g_trigger_left > 0) //Reverse
+            robot.brush.setPower(-BRUSH_SPEED);
+
         if (g_bumper_right)
-            clawOffset_glyph += CLAW_SPEED_glyph;
-        else if (g_bumper_left)
-            clawOffset_glyph -= CLAW_SPEED_glyph;
+            doorClosed = !doorClosed;
 
-        // Move both servos to new position.  Assume servos are mirror image of each other.
-        if (g_bumper_right || g_bumper_left) {
-            clawOffset_glyph = Range.clip(clawOffset_glyph, -0.1, .2);
-            robot.leftGripper.setPosition(robot.MID_SERVO + clawOffset_glyph + 0.1);
-            robot.rightGripper.setPosition(robot.MID_SERVO - clawOffset_glyph);
-        }
+        robot.armLower.setPower(-g_left_y * .05);
+        robot.armMid.setPosition(ARM_MID_STARTING_POS + armMidOffset);
+        robot.armUpper.setPosition(ARM_UPPER_STARTING_POS + armUpperOffset);
 
-        // RELIC PIVOT
-        if (g_dpad_left)
-            clawOffset_relic += CLAW_SPEED_relic;
-        else if (g_dpad_right)
-            clawOffset_relic -= CLAW_SPEED_relic;
+        //TODO
+        // Minimum and maximum for armLower. (Use encoder)
+        // robot.armMid.setPosition(Range.clip(ARM_MID_STARTING_POS + armMidOffset, ARM_MID_MIN_POS, ARM_MID_MAX_POS));
+        // robot.armUpper.setPosition(Range.clip(ARM_UPPER_STARTING_POS + armMidOffset, ARM_MID_MIN_POS, ARM_MID_MAX_POS));
 
-        if (g_dpad_left || g_dpad_right) {
-            clawOffset_relic = Range.clip(clawOffset_relic, -0.5, 0.5);
-            robot.relicPivot.setPosition(robot.MID_SERVO + clawOffset_relic);
-        }
+        manageDoors();
+    }
 
-        // RELIC GRIPPER
-        if (g_trigger_left != 0)
-            clawOffset_relic += CLAW_SPEED_relic;
-        else if (g_trigger_right != 0)
-            clawOffset_relic -= CLAW_SPEED_relic;
-
-        if (g_trigger_left != 0 || g_trigger_right != 0) {
-            clawOffset_relic = Range.clip(clawOffset_relic, -0.1, 0.5);
-            robot.relicGripper.setPosition(robot.MID_SERVO - clawOffset_relic);
-        }
-
-        // Send telemetry message to signify robot running;
-        telemetry.addData("claw",  "Offset = %.2f", clawOffset_glyph);
-        telemetry.addData("p_left_y",  "%.2f", p_left_y);
-        telemetry.addData("p_right_y", "%.2f", p_right_y);
-        telemetry.addData("p_left_x", "%.2f", p_left_x);
-        telemetry.addData("g_left_y", "%.2f", g_left_y);
-        telemetry.addData("g_right_y", "%.2f", g_right_y);
-        telemetry.addData("g_button_y", "", g_button_y);
-        telemetry.addData("g_button_a", "", g_button_a);
+    public void pickUpPosition() {
 
     }
 
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
+    public void dropPosition() {
+
+    }
+
+    public void manageDoors() {
+        if (doorClosed) {
+            /*robot.doorLeft.setPosition(pos); //TODO
+            //robot.doorLeft.setPosition(pos);
+            */
+        }
+        else {
+            /*
+            robot.doorLeft.setPosition(pos);
+            robot.doorLeft.setPosition(pos);
+            */
+        }
     }
 }
