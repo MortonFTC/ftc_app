@@ -53,15 +53,11 @@ public class Teleop2018 extends OpMode {
     //TODO Track arm 1 movement with encoder
     HardwareMecanum robot = new HardwareMecanum();
 
-    public double ARM_MID_STARTING_POS;
     //public final double ARM_MID_MAX_POS = 1; //TODO
     //public final double ARM_MID_MIN_POS = 1;
-    public double armMidOffset = 0;
 
-    public double ARM_UPPER_STARTING_POS;
     //public final double ARM_UPPER_MAX_POS = 1; //TODO
     //public final double ARM_UPPER_MIN_POS = 1;
-    public double armUpperOffset = 0;
 
     public double RATE_OF_CHANGE = .005;
 
@@ -72,9 +68,6 @@ public class Teleop2018 extends OpMode {
     @Override
     public void init() {
         robot.init(hardwareMap);
-
-        ARM_MID_STARTING_POS = robot.armMid.getPosition();
-        ARM_UPPER_STARTING_POS = robot.armUpper.getPosition();
     }
 
     @Override
@@ -153,14 +146,14 @@ public class Teleop2018 extends OpMode {
             dropPosition();
 
         //Controlling the arms.
-        if (g_dpad_up)
-            armMidOffset += RATE_OF_CHANGE;
+        /*if (g_dpad_up)
+
         else if (g_dpad_down)
-            armMidOffset -= RATE_OF_CHANGE;
+*/
 
         if (g_right_y != 0)
         {
-            armUpperOffset += (-g_right_y * .05);
+            //TODO armUpperOffset += (-g_right_y * .05);
         }
         //armLower is controlled at bottom.
 
@@ -175,8 +168,9 @@ public class Teleop2018 extends OpMode {
             doorClosed = !doorClosed;
 
         robot.armLower.setPower(-g_left_y * .05);
-        robot.armMid.setPosition(ARM_MID_STARTING_POS + armMidOffset);
-        robot.armUpper.setPosition(ARM_UPPER_STARTING_POS + armUpperOffset);
+        //TODO
+        //robot.armMid.setPosition(ARM_MID_STARTING_POS + armMidOffset);
+        ///robot.armUpper.setPosition(ARM_UPPER_STARTING_POS + armUpperOffset);
 
         //TODO
         // Minimum and maximum for armLower. (Use encoder)
@@ -207,4 +201,36 @@ public class Teleop2018 extends OpMode {
             */
         }
     }
+
+    public enum PresetLocation
+    {
+        CLOSED, OPEN, MID;
+    }
+
+    public void setPresetPosition(PresetLocation location)
+    {
+        switch (location)
+        {
+            case CLOSED:
+                robot.armMidLeftOut.setPosition(1);
+                robot.armMidLeftIn.setPosition(0);
+                robot.armMidRightOut.setPosition(0);
+                robot.armMidRightIn.setPosition(1);
+                break;
+            case OPEN:
+                robot.armMidLeftOut.setPosition(.3571);
+                robot.armMidLeftIn.setPosition(.6429);
+                robot.armMidRightOut.setPosition(.6429);
+                robot.armMidRightIn.setPosition(.3571);
+                break;
+            case MID:
+                robot.armMidLeftOut.setPosition(.0714);
+                robot.armMidLeftIn.setPosition(.9286);
+                robot.armMidRightOut.setPosition(.9286);
+                robot.armMidRightIn.setPosition(.0714);
+
+        }
+    }
 }
+
+
