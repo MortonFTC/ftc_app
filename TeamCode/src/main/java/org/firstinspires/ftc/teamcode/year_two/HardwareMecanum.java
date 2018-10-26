@@ -56,7 +56,8 @@ public class HardwareMecanum
     public DcMotor  rightFrontDrive  = null;
     public DcMotor  leftRearDrive    = null;
     public DcMotor  rightRearDrive   = null;
-    public DcMotor armLower = null;
+    public DcMotor armLowerLeft = null;
+    public DcMotor armLowerRight = null;
 
     // Servos
     public Servo armMidLeftOut = null;
@@ -65,6 +66,7 @@ public class HardwareMecanum
     public Servo armMidRightIn = null;
     public Servo armUpperOut = null;
     public Servo armUpperIn = null;
+
     public Servo singleMastDrive = null;
     public Servo hook = null;
     public Servo doorLeft = null;
@@ -101,10 +103,17 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
+        armLowerLeft = hwMap.get(DcMotor.class, "armLowerLeft");
+        armLowerRight = hwMap.get(DcMotor.class, "armLowerRight");
+
         armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
         armMidLeftIn = hwMap.get(Servo.class, "armMidLeftIn");
         armMidRightOut = hwMap.get(Servo.class, "armMidRightOut");
         armMidLeftIn = hwMap.get(Servo.class, "armMidRightIn");
+
+        armUpperOut = hwMap.get(Servo.class, "armUpperOut");
+        armUpperIn = hwMap.get(Servo.class, "armUpperIn");
+
         singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
         doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
         doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");

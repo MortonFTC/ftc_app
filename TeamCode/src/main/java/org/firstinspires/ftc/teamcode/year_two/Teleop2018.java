@@ -53,17 +53,18 @@ public class Teleop2018 extends OpMode {
     //TODO Track arm 1 movement with encoder
     HardwareMecanum robot = new HardwareMecanum();
 
+    public double RATE_OF_CHANGE = 1/280;
+
+    public final double BRUSH_SPEED = 1; //TODO
+
+    public boolean doorClosed = true;
+
+
     //public final double ARM_MID_MAX_POS = 1; //TODO
     //public final double ARM_MID_MIN_POS = 1;
 
     //public final double ARM_UPPER_MAX_POS = 1; //TODO
     //public final double ARM_UPPER_MIN_POS = 1;
-
-    public double RATE_OF_CHANGE = .005;
-
-    public final double BRUSH_SPEED = 1; //TODO
-
-    public boolean doorClosed = true;
 
     @Override
     public void init() {
@@ -83,7 +84,9 @@ public class Teleop2018 extends OpMode {
         double g_left_y; // armTilt
         double g_right_y; // armExtender
         boolean g_button_y; // armLift (up)
+        boolean g_button_b; // armLift (down)boolean g_button_y; // armLift (up)
         boolean g_button_a; // armLift (down)
+        boolean g_button_x;
         boolean g_bumper_left; // leftGripper/rightGripper (open)
         boolean g_bumper_right; // leftGripper/rightGripper (close)
         double g_trigger_left; // relicGripper (open)
@@ -108,6 +111,8 @@ public class Teleop2018 extends OpMode {
         g_right_y = gamepad2.right_stick_y;
         g_button_y = gamepad2.y;
         g_button_a = gamepad2.a;
+        g_button_x = gamepad2.x;
+        g_button_b = gamepad2.b;
         g_bumper_left = gamepad2.left_bumper;
         g_bumper_right = gamepad2.right_bumper;
         g_trigger_left = gamepad2.left_trigger;
@@ -139,6 +144,15 @@ public class Teleop2018 extends OpMode {
         robot.leftRearDrive.setPower(lRearDrive);
         robot.rightRearDrive.setPower(rRearDrive);
 
+        //Preset positions open, mid, and closed.
+        if (g_button_x)
+            setPresetPosition(PresetLocation.CLOSED);
+        else if (g_button_y)
+            setPresetPosition(PresetLocation.OPEN);
+        else if (g_button_b)
+            setPresetPosition(PresetLocation.MID);
+
+
         //Pick up and drop preset positions.
         if (p_left_bumper)
             pickUpPosition();
@@ -146,14 +160,33 @@ public class Teleop2018 extends OpMode {
             dropPosition();
 
         //Controlling the arms.
-        /*if (g_dpad_up)
-
+        if (g_dpad_up)
+        {
+            //Change by 1 degree
+            // 1/280
+            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
+        }
         else if (g_dpad_down)
-*/
+        {
+            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
+        }
+
+        if (g_left_y != 0)
+        {
+            robot.armLowerLeft.setPower(-g_right_y * .05);
+            robot.armLowerLeft.setPower(-(-g_right_y * .05));
+        }
 
         if (g_right_y != 0)
         {
-            //TODO armUpperOffset += (-g_right_y * .05);
+            robot.armUpperOut.setPosition(robot.armUpperOut.getPosition() + (-g_right_y * .05));
+            robot.armUpperOut.setPosition(robot.armUpperIn.getPosition() - (-g_right_y * .05));
         }
         //armLower is controlled at bottom.
 
@@ -167,7 +200,6 @@ public class Teleop2018 extends OpMode {
         if (g_bumper_right)
             doorClosed = !doorClosed;
 
-        robot.armLower.setPower(-g_left_y * .05);
         //TODO
         //robot.armMid.setPosition(ARM_MID_STARTING_POS + armMidOffset);
         ///robot.armUpper.setPosition(ARM_UPPER_STARTING_POS + armUpperOffset);
@@ -204,7 +236,7 @@ public class Teleop2018 extends OpMode {
 
     public enum PresetLocation
     {
-        CLOSED, OPEN, MID;
+        CLOSED, OPEN, MID
     }
 
     public void setPresetPosition(PresetLocation location)
