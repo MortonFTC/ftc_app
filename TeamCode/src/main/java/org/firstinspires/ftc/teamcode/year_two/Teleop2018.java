@@ -61,8 +61,6 @@ public class Teleop2018 extends OpMode {
 
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
 
-    public boolean doorClosed = true;
-
     //TODO Set one armLower motor to go in reverse.
 
 
@@ -201,7 +199,7 @@ public class Teleop2018 extends OpMode {
 
         if (g_right_y != 0) {
             robot.armUpperOut.setPosition(robot.armUpperOut.getPosition() + (-g_right_y * .05));
-            robot.armUpperOut.setPosition(robot.armUpperIn.getPosition() - (-g_right_y * .05));
+            robot.armUpperIn.setPosition(robot.armUpperIn.getPosition() - (-g_right_y * .05));
         }
         //armLower is controlled at bottom.
 
@@ -213,22 +211,11 @@ public class Teleop2018 extends OpMode {
             robot.brush.setPower(-BRUSH_SPEED);
 
         if (g_bumper_right) {
-            doorClosed = !doorClosed;
-            manageDoors();
-        }
-    }
-
-    public void manageDoors() { //TODO Change from toggle to buttons for open/close
-        if (doorClosed) {
-            /*robot.doorLeft.setPosition(pos); //TODO
-            //robot.doorLeft.setPosition(pos);
-            */
+            //TODO
+            //open
         }
         else {
-            /*
-            robot.doorLeft.setPosition(pos);
-            robot.doorLeft.setPosition(pos);
-            */
+            //stay closed
         }
     }
 

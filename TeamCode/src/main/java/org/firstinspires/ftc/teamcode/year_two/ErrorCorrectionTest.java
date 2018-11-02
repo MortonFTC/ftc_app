@@ -23,7 +23,9 @@ public class ErrorCorrectionTest extends LinearOpMode {
         rightIn = hardwareMap.get(Servo.class,"rightIn");
         rightOut = hardwareMap.get(Servo.class,"rightOut");
 
-        boolean run =false;
+        boolean run = false;
+
+        Double QUARTER_DEGREE = 2/280D;
 
         waitForStart();
 
@@ -31,10 +33,10 @@ public class ErrorCorrectionTest extends LinearOpMode {
         while (opModeIsActive()) {
 
             if (!run) {
-                leftOut.setPosition(1);
-                leftIn.setPosition(0);
-                rightIn.setPosition(1);
-                rightOut.setPosition(0);
+                leftOut.setPosition(1 - QUARTER_DEGREE);
+                leftIn.setPosition(0 + QUARTER_DEGREE);
+                rightIn.setPosition(1 - QUARTER_DEGREE);
+                rightOut.setPosition(0 + QUARTER_DEGREE);
                 run =true;
             }
                 telemetry.addData("leftOut", leftOut.getPosition());
