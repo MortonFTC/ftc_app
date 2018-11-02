@@ -85,7 +85,8 @@ public class HardwareMecanum
     public static final double ARM_UP_POWER    = -1.0;
     public static final double ARM_DOWN_POWER  = 1.0;
 */
-    static final double     ARM_COUNTS_PER_MOTOR_REV    = 1300;    // eg: TETRIX Motor Encoder
+    static final double ARM_COUNTS_PER_MOTOR_REV    = 1300;    // eg: TETRIX Motor Encoder
+    static final double ARM_MOTOR_REVS_PER_SHAFT_REV = 28;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;

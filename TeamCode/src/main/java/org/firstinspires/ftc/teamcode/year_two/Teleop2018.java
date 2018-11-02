@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * This file provides basic Telop driving for a Mecanum robot.
@@ -50,14 +51,19 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 public class Teleop2018 extends OpMode {
 
-    //TODO Track arm 1 movement with encoder
     HardwareMecanum robot = new HardwareMecanum();
 
-    public double RATE_OF_CHANGE = 1/280;
+    public final double SERVO_RATE_OF_CHANGE = 1/280;
+
+    public final int ARM_LOWER_RATE_OF_CHANGE = 28;
 
     public final double BRUSH_SPEED = 1; //TODO
 
+    public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
+
     public boolean doorClosed = true;
+
+    //TODO Set one armLower motor to go in reverse.
 
 
     //public final double ARM_MID_MAX_POS = 1; //TODO
@@ -69,6 +75,8 @@ public class Teleop2018 extends OpMode {
     @Override
     public void init() {
         robot.init(hardwareMap);
+        robot.armLowerLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     @Override
@@ -154,37 +162,44 @@ public class Teleop2018 extends OpMode {
 
 
         //Pick up and drop preset positions.
-        if (p_left_bumper)
-            pickUpPosition();
-        else if (p_right_bumper)
-            dropPosition();
+        //if (p_left_bumper)
+            //pickUpPosition(); TODO Uncomment
+       // else if (p_right_bumper)
+            //dropPosition();
 
         //Controlling the arms.
-        if (g_dpad_up)
-        {
+        if (g_dpad_up) {
             //Change by 1 degree
             // 1/280
-            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
-            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
-            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
-            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
+            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
         }
-        else if (g_dpad_down)
-        {
-            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
-            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
-            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() + RATE_OF_CHANGE);
-            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() - RATE_OF_CHANGE);
-        }
-
-        if (g_left_y != 0)
-        {
-            robot.armLowerLeft.setPower(-g_right_y * .05);
-            robot.armLowerLeft.setPower(-(-g_right_y * .05));
+        else if (g_dpad_down) {
+            robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
         }
 
-        if (g_right_y != 0)
-        {
+        if (g_left_y != 0 & Math.abs(g_left_y) >= .3) { //Deadzone for joystick
+            if (-g_left_y > .3) {
+                robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
+                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
+                armLowerOffset += ARM_LOWER_RATE_OF_CHANGE;
+            }
+            else if (-g_left_y < -.3) {
+                robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
+                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE);
+                armLowerOffset -= ARM_LOWER_RATE_OF_CHANGE;
+            }
+
+            robot.armLowerLeft.setPower(.05); //TODO If arm keeps moving after joystick released, increase this value.
+            robot.armLowerRight.setPower(.05);
+        }
+
+        if (g_right_y != 0) {
             robot.armUpperOut.setPosition(robot.armUpperOut.getPosition() + (-g_right_y * .05));
             robot.armUpperOut.setPosition(robot.armUpperIn.getPosition() - (-g_right_y * .05));
         }
@@ -197,30 +212,13 @@ public class Teleop2018 extends OpMode {
         else if (g_trigger_left > 0) //Reverse
             robot.brush.setPower(-BRUSH_SPEED);
 
-        if (g_bumper_right)
+        if (g_bumper_right) {
             doorClosed = !doorClosed;
-
-        //TODO
-        //robot.armMid.setPosition(ARM_MID_STARTING_POS + armMidOffset);
-        ///robot.armUpper.setPosition(ARM_UPPER_STARTING_POS + armUpperOffset);
-
-        //TODO
-        // Minimum and maximum for armLower. (Use encoder)
-        // robot.armMid.setPosition(Range.clip(ARM_MID_STARTING_POS + armMidOffset, ARM_MID_MIN_POS, ARM_MID_MAX_POS));
-        // robot.armUpper.setPosition(Range.clip(ARM_UPPER_STARTING_POS + armMidOffset, ARM_MID_MIN_POS, ARM_MID_MAX_POS));
-
-        manageDoors();
+            manageDoors();
+        }
     }
 
-    public void pickUpPosition() {
-
-    }
-
-    public void dropPosition() {
-
-    }
-
-    public void manageDoors() {
+    public void manageDoors() { //TODO Change from toggle to buttons for open/close
         if (doorClosed) {
             /*robot.doorLeft.setPosition(pos); //TODO
             //robot.doorLeft.setPosition(pos);
@@ -234,34 +232,68 @@ public class Teleop2018 extends OpMode {
         }
     }
 
-    public enum PresetLocation
-    {
-        CLOSED, OPEN, MID
+    public enum PresetLocation {
+        CLOSED, OPEN, MID, PICK_UP, DROP
     }
 
-    public void setPresetPosition(PresetLocation location)
-    {
-        switch (location)
-        {
+    public void setPresetPosition(PresetLocation location) {
+        //TODO Add support for threads.
+        Integer armLowerDesiredPosition = null; //In units of encoder counts from starting position
+
+        Double armMidLeftOut = null; //In units of 0 to 1
+        Double armMidLeftIn = null;
+        Double armMidRightOut = null;
+        Double armMidRightIn = null;
+        Double armUpperIn = null;
+        Double armUpperOut = null;
+
+        switch (location) {
             case CLOSED:
-                robot.armMidLeftOut.setPosition(1);
-                robot.armMidLeftIn.setPosition(0);
-                robot.armMidRightOut.setPosition(0);
-                robot.armMidRightIn.setPosition(1);
+                armMidLeftOut = 1D;
+                armMidLeftIn = 0D;
+                armMidRightOut = 0D;
+                armMidRightIn = 1D;
                 break;
             case OPEN:
-                robot.armMidLeftOut.setPosition(.3571);
-                robot.armMidLeftIn.setPosition(.6429);
-                robot.armMidRightOut.setPosition(.6429);
-                robot.armMidRightIn.setPosition(.3571);
+                armMidLeftOut = .3571D;
+                armMidLeftIn = .6429D;
+                armMidRightOut = .6429D;
+                armMidRightIn = .3571D;
                 break;
             case MID:
-                robot.armMidLeftOut.setPosition(.0714);
-                robot.armMidLeftIn.setPosition(.9286);
-                robot.armMidRightOut.setPosition(.9286);
-                robot.armMidRightIn.setPosition(.0714);
-
+                armMidLeftOut = .0714D;
+                armMidLeftIn = .9286D;
+                armMidRightOut = .9286D;
+                armMidRightIn = .0714D;
+                break;
+            case PICK_UP:
+                //TODO
+                break;
+            case DROP:
+                //TODO
+                break;
         }
+
+        if (armLowerDesiredPosition != null) {
+            robot.armLowerLeft.setTargetPosition(armLowerDesiredPosition - armLowerOffset);
+            robot.armLowerRight.setTargetPosition(-(armLowerDesiredPosition - armLowerOffset));
+
+            robot.armLowerLeft.setPower(.05); //Change if arm is moving after joystick released.
+            robot.armLowerRight.setPower(.05);
+        }
+
+        if (armMidLeftOut != null)
+            robot.armMidLeftOut.setPosition(armMidLeftOut);
+        if (armMidLeftIn != null)
+            robot.armMidLeftIn.setPosition(armMidLeftIn);
+        if (armMidRightOut != null)
+            robot.armMidRightOut.setPosition(armMidRightOut);
+        if (armMidRightIn != null)
+            robot.armMidRightIn.setPosition(armMidRightIn);
+        if (armUpperOut != null)
+            robot.armUpperOut.setPosition(armUpperOut);
+        if (armUpperIn != null)
+            robot.armUpperIn.setPosition(armUpperIn);
     }
 }
 
