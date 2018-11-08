@@ -64,13 +64,12 @@ public class HardwareMecanum
     public Servo armMidLeftIn = null;
     public Servo armMidRightOut = null;
     public Servo armMidRightIn = null;
-    public Servo armUpperOut = null;
-    public Servo armUpperIn = null;
+    public Servo armUpperRight = null;
+    public Servo armUpperLeft = null;
 
     public Servo singleMastDrive = null;
     public Servo hook = null;
-    public Servo doorLeft = null;
-    public Servo doorRight = null;
+    public Servo door = null;
     public Servo doubleMastDrive1 = null;
     public Servo doubleMastDrive2 = null;
 
@@ -112,16 +111,15 @@ public class HardwareMecanum
         armMidRightOut = hwMap.get(Servo.class, "armMidRightOut");
         armMidLeftIn = hwMap.get(Servo.class, "armMidRightIn");
 
-        armUpperOut = hwMap.get(Servo.class, "armUpperOut");
-        armUpperIn = hwMap.get(Servo.class, "armUpperIn");
+        armUpperRight = hwMap.get(Servo.class, "armUpperRight");
+        armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
 
         singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
         doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
         doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");
         hook = hwMap.get(Servo.class, "hook");
         brush = hwMap.get(CRServo.class, "brush");
-        doorLeft = hwMap.get(Servo.class, "doorLeft");
-        doorRight = hwMap.get(Servo.class, "doorRight");
+        door = hwMap.get(Servo.class, "door");
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);

@@ -81,8 +81,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-//@Disabled
-@Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Short)", group="Auto")
+
+//@Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Short)", group="Auto")
 public class MecanumAutoDriveByEncoder_Linear_BlueShort extends LinearOpMode {
 
     /* Declare OpMode members. */

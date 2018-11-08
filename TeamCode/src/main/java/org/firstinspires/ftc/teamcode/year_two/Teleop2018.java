@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.year_two;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -46,7 +47,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-
+@Disabled
 @TeleOp(name="Teleop 2018", group="Manual")
 
 public class Teleop2018 extends OpMode {
@@ -60,6 +61,9 @@ public class Teleop2018 extends OpMode {
     public final double BRUSH_SPEED = 1; //TODO
 
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
+
+    public final double DOOR_START_POS = 0;
+    public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280D;
 
     //TODO Set one armLower motor to go in reverse.
 
@@ -198,8 +202,8 @@ public class Teleop2018 extends OpMode {
         }
 
         if (g_right_y != 0) {
-            robot.armUpperOut.setPosition(robot.armUpperOut.getPosition() + (-g_right_y * .05));
-            robot.armUpperIn.setPosition(robot.armUpperIn.getPosition() - (-g_right_y * .05));
+            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() + (-g_right_y * .05));
+            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - (-g_right_y * .05));
         }
         //armLower is controlled at bottom.
 
@@ -211,12 +215,15 @@ public class Teleop2018 extends OpMode {
             robot.brush.setPower(-BRUSH_SPEED);
 
         if (g_bumper_right) {
-            //TODO
-            //open
+            robot.door.setPosition(DOOR_OPEN_POS);
         }
         else {
-            //stay closed
+            robot.door.setPosition(DOOR_START_POS);
         }
+    }
+
+    public double getBRUSH_SPEED() {
+        return BRUSH_SPEED;
     }
 
     public enum PresetLocation {
@@ -231,8 +238,8 @@ public class Teleop2018 extends OpMode {
         Double armMidLeftIn = null;
         Double armMidRightOut = null;
         Double armMidRightIn = null;
-        Double armUpperIn = null;
-        Double armUpperOut = null;
+        Double armUpperLeft = null;
+        Double armUpperRight = null;
 
         switch (location) {
             case CLOSED:
@@ -277,10 +284,10 @@ public class Teleop2018 extends OpMode {
             robot.armMidRightOut.setPosition(armMidRightOut);
         if (armMidRightIn != null)
             robot.armMidRightIn.setPosition(armMidRightIn);
-        if (armUpperOut != null)
-            robot.armUpperOut.setPosition(armUpperOut);
-        if (armUpperIn != null)
-            robot.armUpperIn.setPosition(armUpperIn);
+        if (armUpperRight != null)
+            robot.armUpperRight.setPosition(armUpperRight);
+        if (armUpperLeft != null)
+            robot.armUpperLeft.setPosition(armUpperLeft);
     }
 }
 
