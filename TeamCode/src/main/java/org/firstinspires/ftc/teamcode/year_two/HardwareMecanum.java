@@ -103,7 +103,7 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
-        armLowerLeft = hwMap.get(DcMotor.class, "armLowerLeft");
+        //armLowerLeft = hwMap.get(DcMotor.class, "armLowerLeft");
         armLowerRight = hwMap.get(DcMotor.class, "armLowerRight");
 
         armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
@@ -114,19 +114,19 @@ public class HardwareMecanum
         armUpperRight = hwMap.get(Servo.class, "armUpperRight");
         armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
 
-        singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
-        doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
-        doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");
-        hook = hwMap.get(Servo.class, "hook");
+        //singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
+        //doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
+        //doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");
+        //hook = hwMap.get(Servo.class, "hook");
         brush = hwMap.get(CRServo.class, "brush");
         door = hwMap.get(Servo.class, "door");
+
+        //colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
         leftRearDrive.setPower(0);
         rightRearDrive.setPower(0);
-
-        colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
     }
 }

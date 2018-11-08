@@ -47,7 +47,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Disabled
+//@Disabled
 @TeleOp(name="Teleop 2018", group="Manual")
 
 public class Teleop2018 extends OpMode {
@@ -77,7 +77,7 @@ public class Teleop2018 extends OpMode {
     @Override
     public void init() {
         robot.init(hardwareMap);
-        robot.armLowerLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //robot.armLowerLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -162,7 +162,6 @@ public class Teleop2018 extends OpMode {
         else if (g_button_b)
             setPresetPosition(PresetLocation.MID);
 
-
         //Pick up and drop preset positions.
         //if (p_left_bumper)
             //pickUpPosition(); TODO Uncomment
@@ -187,17 +186,17 @@ public class Teleop2018 extends OpMode {
 
         if (g_left_y != 0 & Math.abs(g_left_y) >= .3) { //Deadzone for joystick
             if (-g_left_y > .3) {
-                robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
-                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
-                armLowerOffset += ARM_LOWER_RATE_OF_CHANGE;
-            }
-            else if (-g_left_y < -.3) {
-                robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
+                //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
                 robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE);
                 armLowerOffset -= ARM_LOWER_RATE_OF_CHANGE;
             }
+            else if (-g_left_y < -.3) {
+                //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
+                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
+                armLowerOffset += ARM_LOWER_RATE_OF_CHANGE;
+            }
 
-            robot.armLowerLeft.setPower(.05); //TODO If arm keeps moving after joystick released, increase this value.
+            //robot.armLowerLeft.setPower(.05); //TODO If arm keeps moving after joystick released, increase this value.
             robot.armLowerRight.setPower(.05);
         }
 
@@ -205,8 +204,6 @@ public class Teleop2018 extends OpMode {
             robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() + (-g_right_y * .05));
             robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - (-g_right_y * .05));
         }
-        //armLower is controlled at bottom.
-
 
         //Activating the brushes.
         if (g_trigger_right > 0)
@@ -220,6 +217,7 @@ public class Teleop2018 extends OpMode {
         else {
             robot.door.setPosition(DOOR_START_POS);
         }
+
     }
 
     public double getBRUSH_SPEED() {
