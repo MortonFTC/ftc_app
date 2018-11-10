@@ -29,8 +29,8 @@ public class ErrorCorrectFinal extends LinearOpMode {
         while (opModeIsActive()) {
             /*final Double LeftOutSTART = 0.931;  //FINAL START POS
             final Double LeftInSTART = 0.082;   //FINAL START POS
-            final Double RightInSTART = 0.966;
             final Double RightOutSTART = 0.047;
+            final Double RightInSTART = 0.966;
             */
             final Double uppperLeftSTART = 0.9742;
             final Double upperRightSTART = 0.0517;

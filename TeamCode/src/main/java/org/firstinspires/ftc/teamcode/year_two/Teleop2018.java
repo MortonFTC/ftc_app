@@ -54,16 +54,17 @@ public class Teleop2018 extends OpMode {
 
     HardwareMecanum robot = new HardwareMecanum();
 
-    public final double SERVO_RATE_OF_CHANGE = 1/280;
+    public final double SERVO_RATE_OF_CHANGE = (1/280)*5;
 
-    public final int ARM_LOWER_RATE_OF_CHANGE = 28;
+    public final int ARM_LOWER_RATE_OF_CHANGE = 28*5;
 
     public final double BRUSH_SPEED = 1; //TODO
 
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
 
-    public final double DOOR_START_POS = 0;
+    public final double DOOR_START_POS = 0.5;
     public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280D;
+    public boolean door_closed = true;
 
     //TODO Set one armLower motor to go in reverse.
 
@@ -79,6 +80,13 @@ public class Teleop2018 extends OpMode {
         robot.init(hardwareMap);
         //robot.armLowerLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armMidLeftOut.setPosition(0.931);
+        robot.armMidLeftIn.setPosition(0.082);
+        robot.armMidRightOut.setPosition(0.047);
+        robot.armMidRightIn.setPosition(0.966);
+        robot.armUpperRight.setPosition(0.0517);
+        robot.armUpperLeft.setPosition(0.9742);
+        robot.door.setPosition(0.50);
     }
 
     @Override
@@ -155,13 +163,15 @@ public class Teleop2018 extends OpMode {
         robot.rightRearDrive.setPower(rRearDrive);
 
         //Preset positions open, mid, and closed.
-        if (g_button_x)
+        if (g_button_x) {
             setPresetPosition(PresetLocation.CLOSED);
-        else if (g_button_y)
-            setPresetPosition(PresetLocation.OPEN);
-        else if (g_button_b)
-            setPresetPosition(PresetLocation.MID);
-
+        }
+       // else if (g_button_y) {
+       //    //setPresetPosition(PresetLocation.OPEN);
+        //}
+        //else if (g_button_b) {
+        //    //setPresetPosition(PresetLocation.MID);
+        //}
         //Pick up and drop preset positions.
         //if (p_left_bumper)
             //pickUpPosition(); TODO Uncomment
@@ -173,15 +183,15 @@ public class Teleop2018 extends OpMode {
             //Change by 1 degree
             // 1/280
             robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
-            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
-            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
-            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftIn.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidRightOut.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidRightIn.getPosition() - SERVO_RATE_OF_CHANGE);
         }
         else if (g_dpad_down) {
             robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
-            robot.armMidLeftIn.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
-            robot.armMidRightOut.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
-            robot.armMidRightIn.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidLeftIn.setPosition(robot.armMidLeftIn.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidRightOut.setPosition(robot.armMidRightOut.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armMidRightIn.setPosition(robot.armMidRightIn.getPosition() + SERVO_RATE_OF_CHANGE);
         }
 
         if (g_left_y != 0 & Math.abs(g_left_y) >= .3) { //Deadzone for joystick
@@ -200,9 +210,13 @@ public class Teleop2018 extends OpMode {
             robot.armLowerRight.setPower(.05);
         }
 
-        if (g_right_y != 0) {
-            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() + (-g_right_y * .05));
-            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - (-g_right_y * .05));
+        if (g_button_y) {
+            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - SERVO_RATE_OF_CHANGE);
+        }
+        if (g_button_a) {
+            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() + SERVO_RATE_OF_CHANGE);
         }
 
         //Activating the brushes.
@@ -210,14 +224,18 @@ public class Teleop2018 extends OpMode {
             robot.brush.setPower(BRUSH_SPEED); //TODO Tweak to make sure it's going the right direction
         else if (g_trigger_left > 0) //Reverse
             robot.brush.setPower(-BRUSH_SPEED);
+        else robot.brush.setPower(0);
 
         if (g_bumper_right) {
             robot.door.setPosition(DOOR_OPEN_POS);
+            door_closed = false;
         }
         else {
-            robot.door.setPosition(DOOR_START_POS);
+            if (door_closed = false) {
+                robot.door.setPosition(DOOR_START_POS);
+            }
+            door_closed = true;
         }
-
     }
 
     public double getBRUSH_SPEED() {
@@ -241,22 +259,28 @@ public class Teleop2018 extends OpMode {
 
         switch (location) {
             case CLOSED:
-                armMidLeftOut = 1D;
-                armMidLeftIn = 0D;
-                armMidRightOut = 0D;
-                armMidRightIn = 1D;
+                armMidLeftOut = 0.931D;
+                armMidLeftIn = 0.082D;
+                armMidRightOut = 0.966D;
+                armMidRightIn = 0.047D;
+                armUpperLeft = 0.9742D;
+                armUpperRight = 0.0517D;
                 break;
             case OPEN:
                 armMidLeftOut = .3571D;
                 armMidLeftIn = .6429D;
                 armMidRightOut = .6429D;
                 armMidRightIn = .3571D;
+                armUpperLeft = 0.9742D;
+                armUpperRight = 0.0517D;
                 break;
             case MID:
                 armMidLeftOut = .0714D;
                 armMidLeftIn = .9286D;
                 armMidRightOut = .9286D;
                 armMidRightIn = .0714D;
+                armUpperLeft = 0.9742D;
+                armUpperRight = 0.0517D;
                 break;
             case PICK_UP:
                 //TODO

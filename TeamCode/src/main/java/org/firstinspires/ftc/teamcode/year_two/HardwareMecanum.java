@@ -48,6 +48,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Note:  All names are lower case and some have single spaces between words.
  *
  */
+    //brush SERVO = HUB LEFT - POS = 0
+    //armUpperLeft SERVO = HUB LEFT - POS = 1
+    //armMidLeftIn SERVO = HUB LEFT - POS = 2
+    //armMidLeftOut SERVO = HUB LEFT - POS = 3
+    //door SERVO = HUB RIGHT - POS = 0
+    //armUpperRight SERVO = HUB RIGHT - POS = 1
+    //armMidRightIn SERVO = HUB RIGHT - POS = 2
+    //armMidRightOut SERVO = HUB RIGHT - POS = 3
+
 public class HardwareMecanum
 {
 
@@ -109,7 +118,7 @@ public class HardwareMecanum
         armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
         armMidLeftIn = hwMap.get(Servo.class, "armMidLeftIn");
         armMidRightOut = hwMap.get(Servo.class, "armMidRightOut");
-        armMidLeftIn = hwMap.get(Servo.class, "armMidRightIn");
+        armMidRightIn = hwMap.get(Servo.class, "armMidRightIn");
 
         armUpperRight = hwMap.get(Servo.class, "armUpperRight");
         armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
