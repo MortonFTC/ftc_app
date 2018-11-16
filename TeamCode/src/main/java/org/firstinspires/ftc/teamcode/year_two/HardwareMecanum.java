@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.year_two;
 
 import android.graphics.Color;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -84,6 +85,8 @@ public class HardwareMecanum
 
     public CRServo brush = null;
 
+    public BNO055IMU imu = null;
+
     //Misc
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
 
@@ -131,6 +134,8 @@ public class HardwareMecanum
         door = hwMap.get(Servo.class, "door");
 
         //colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
+
+        imu = hwMap.get(BNO055IMU.class, "imu");
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);
