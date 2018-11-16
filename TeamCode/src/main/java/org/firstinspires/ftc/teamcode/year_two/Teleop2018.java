@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file provides basic Telop driving for a Mecanum robot.
@@ -54,16 +55,17 @@ public class Teleop2018 extends OpMode {
 
     HardwareMecanum robot = new HardwareMecanum();
 
-    public final double SERVO_RATE_OF_CHANGE = (1/280)*5;
+    public final double SERVO_RATE_OF_CHANGE = 1/280.0;
+    public double SERVO_OFFSET = 0.08D;
 
-    public final int ARM_LOWER_RATE_OF_CHANGE = 28*5;
+    public final int ARM_LOWER_RATE_OF_CHANGE = 28*40;
 
     public final double BRUSH_SPEED = 1; //TODO
 
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
 
-    public final double DOOR_START_POS = 0.5;
-    public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280D;
+    public final double DOOR_START_POS = 0.5D;
+    public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
     public boolean door_closed = true;
 
     //TODO Set one armLower motor to go in reverse.
@@ -180,14 +182,21 @@ public class Teleop2018 extends OpMode {
 
         //Controlling the arms.
         if (g_dpad_up) {
-            //Change by 1 degree
-            // 1/280
+            SERVO_OFFSET = SERVO_OFFSET + SERVO_RATE_OF_CHANGE;
+            SERVO_OFFSET = Range.clip(SERVO_OFFSET, 0, 1);
+            telemetry.addData("Dpad state", "Up");
+            telemetry.addData("Offset", SERVO_OFFSET);
+            telemetry.addData("Rate of change", SERVO_RATE_OF_CHANGE);
+            telemetry.addData("armMidLeftOut", robot.armMidLeftOut.getPosition());
             robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() - SERVO_RATE_OF_CHANGE);
             robot.armMidLeftIn.setPosition(robot.armMidLeftIn.getPosition() + SERVO_RATE_OF_CHANGE);
             robot.armMidRightOut.setPosition(robot.armMidRightOut.getPosition() + SERVO_RATE_OF_CHANGE);
             robot.armMidRightIn.setPosition(robot.armMidRightIn.getPosition() - SERVO_RATE_OF_CHANGE);
+
         }
         else if (g_dpad_down) {
+            telemetry.addData("armMidLeftOut", robot.armMidLeftOut.getPosition());
+            telemetry.addData("Dpad state", "Down");
             robot.armMidLeftOut.setPosition(robot.armMidLeftOut.getPosition() + SERVO_RATE_OF_CHANGE);
             robot.armMidLeftIn.setPosition(robot.armMidLeftIn.getPosition() - SERVO_RATE_OF_CHANGE);
             robot.armMidRightOut.setPosition(robot.armMidRightOut.getPosition() - SERVO_RATE_OF_CHANGE);
@@ -207,7 +216,7 @@ public class Teleop2018 extends OpMode {
             }
 
             //robot.armLowerLeft.setPower(.05); //TODO If arm keeps moving after joystick released, increase this value.
-            robot.armLowerRight.setPower(.05);
+            robot.armLowerRight.setPower(1);
         }
 
         if (g_button_y) {

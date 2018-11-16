@@ -105,8 +105,6 @@ public class HardwareMecanum
         this.hwMap = hwMap;
 
         // Define and Initialize Motors
-
-        // Expansion Hub (Address: 2)
         leftFrontDrive  = hwMap.get(DcMotor.class, "leftFrontDrive"); // counter-clockwise = forward
         rightFrontDrive = hwMap.get(DcMotor.class, "rightFrontDrive"); // clockwise = forward
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
