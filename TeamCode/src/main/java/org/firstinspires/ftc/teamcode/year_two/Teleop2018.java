@@ -78,10 +78,14 @@ public class Teleop2018 extends OpMode {
         robot.init(hardwareMap);
         //robot.armLowerLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.armMidLeftOut.setPosition(0.931);
-        robot.armMidLeftIn.setPosition(0.082);
-        robot.armMidRightOut.setPosition(0.047);
-        robot.armMidRightIn.setPosition(0.966);
+        //robot.armMidLeftOut.setPosition(0.931);
+        //robot.armMidLeftIn.setPosition(0.082);
+        robot.armMidLeftOut.setPosition(0);
+        robot.armMidLeftIn.setPosition(1);
+        //robot.armMidRightOut.setPosition(0.047);
+        //robot.armMidRightIn.setPosition(0.966);
+        robot.armMidRightOut.setPosition(1);
+        robot.armMidRightIn.setPosition(0);
         robot.armUpperRight.setPosition(0.0517);
         robot.armUpperLeft.setPosition(0.9742);
         robot.door.setPosition(DOOR_START_POS);

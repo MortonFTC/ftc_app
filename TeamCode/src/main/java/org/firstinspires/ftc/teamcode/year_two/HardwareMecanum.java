@@ -98,6 +98,7 @@ public class HardwareMecanum
 */
     static final double ARM_COUNTS_PER_MOTOR_REV    = 1300;    // eg: TETRIX Motor Encoder
     static final double ARM_MOTOR_REVS_PER_SHAFT_REV = 28;
+    static final double WHEELS_COUNTS_PER_SHAFT_REV = 1400;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;

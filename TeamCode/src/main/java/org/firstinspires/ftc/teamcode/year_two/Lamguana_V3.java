@@ -12,8 +12,6 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name = "Lamgunana_V3", group = "mortonElements")
 public class Lamguana_V3 extends OpMode {
 
-//@Disabled
-
     //TODO Work in progress.
     private DcMotor motorLeft;
     private DcMotor motorRight;
@@ -24,6 +22,15 @@ public class Lamguana_V3 extends OpMode {
     private Servo gripperServo2;
 
     private BNO055IMU imu = null;
+
+    final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
+
+    double clawOffset = 0.0;
+    final double MID_SERVO_claw = 0.5; //Default servo position
+
+
+    double armOffset = 0.0;
+    final double MID_SERVO_arm = 0.5; //Default servo position
 
     @Override
     public void init() {
@@ -40,18 +47,6 @@ public class Lamguana_V3 extends OpMode {
 
         imu.initialize(parameters);
 
-        telemetry.addData("Mode", "calibrating...");
-        telemetry.update();
-
-    }
-
-    @Override
-    public void loop() {
-
-    }
-
-    //@Override
-    public void runOpMode() throws InterruptedException {
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
 
@@ -62,35 +57,31 @@ public class Lamguana_V3 extends OpMode {
         gripperServo1 = hardwareMap.servo.get("gripperServo1");
         gripperServo2 = hardwareMap.servo.get("gripperServo2");
 
-        final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
+        telemetry.addData("Mode", "calibrating...");
+        telemetry.update();
 
-        double clawOffset = 0.0;
-        final double MID_SERVO_claw = 0.5; //Default servo position
+    }
 
+    @Override
+    public void loop() {
+        motorLeft.setPower(-gamepad1.left_stick_y);
+        motorRight.setPower(-gamepad1.right_stick_y);
 
-        double armOffset = 0.0;
-        final double MID_SERVO_arm = 0.5; //Default servo position
+        //Moves the arms
+        if (gamepad1.right_bumper)
+            armOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        else if (gamepad1.left_bumper)
+            armOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-        waitForStart();
+        if (gamepad1.right_trigger > 0)
+            clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        else if (gamepad1.left_trigger > 0)
+            clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+    }
 
-        while (opModeIsActive()) {
-            motorLeft.setPower(-gamepad1.left_stick_y);
-            motorRight.setPower(-gamepad1.right_stick_y);
+    //@Override
+    public void runOpMode() throws InterruptedException {
 
-            //Moves the arms
-            if (gamepad1.right_bumper)
-                armOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-            else if (gamepad1.left_bumper)
-                armOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-
-            if (gamepad1.right_trigger > 0)
-                clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-            else if (gamepad1.left_trigger > 0)
-                clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-            idle();
-
-
-        }
     }
 }
 
