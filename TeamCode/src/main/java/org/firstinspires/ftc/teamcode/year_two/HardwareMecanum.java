@@ -66,7 +66,6 @@ public class HardwareMecanum
     public DcMotor  rightFrontDrive  = null;
     public DcMotor  leftRearDrive    = null;
     public DcMotor  rightRearDrive   = null;
-    public DcMotor armLowerLeft = null;
     public DcMotor armLowerRight = null;
 
     // Servos
@@ -114,7 +113,6 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
-        //armLowerLeft = hwMap.get(DcMotor.class, "armLowerLeft");
         armLowerRight = hwMap.get(DcMotor.class, "armLowerRight");
 
         armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");

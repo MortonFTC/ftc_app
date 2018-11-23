@@ -37,25 +37,72 @@ public class AutonomousMode {
 
     public void init()
     {
+        robot.init(hwMap);
         robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.init(hwMap);
+
+        unhook();
+    }
+
+    public void unhook()
+    {
+        int rightAngleCounts = 9100;
+        //robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + rightAngleCounts);
+        crabSteer(0, 1, 1);
     }
 
     public void drive(double leftInches, double rightInches, double power)
     {
-        robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
-        robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
+        robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
+        robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
 
-        robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches)));
-        robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches)));
+        robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * rightInches)));
+        robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * rightInches)));
 
         robot.leftFrontDrive.setPower(power);
         robot.leftRearDrive.setPower(power);
         robot.rightFrontDrive.setPower(power);
         robot.rightRearDrive.setPower(power);
+    }
+
+    public void crabSteer(int direction, double inches, double power) //0 = left, 1 = right
+    {
+        double modifiedInches = inches * 3;
+
+        int leftFrontModifier = 0; //If direction is not either a 1 or a 0, the robot will not crabsteer.
+        int leftRearModifier = 0;
+        int rightFrontModifier = 0;
+        int rightRearModifier = 0;
+
+        if (direction == 0){
+            leftFrontModifier = -1;
+            leftRearModifier = 1;
+            rightFrontModifier= -1;
+            rightRearModifier = 1;
+        }
+        else if (direction == 1)
+        {
+            leftFrontModifier = 1;
+            leftRearModifier = -1;
+            rightFrontModifier = 1;
+            rightRearModifier = -1;
+        }
+
+        while (true) {
+
+            robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches))));
+            robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches))));
+
+            robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches)));
+            robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches)));
+
+            robot.leftFrontDrive.setPower(power);
+            robot.leftRearDrive.setPower(power);
+            robot.rightFrontDrive.setPower(power);
+            robot.rightRearDrive.setPower(power);
+        }
     }
 
     private double getAngle()
