@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 public class AutonomousModePos1 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        AutonomousMode am = new AutonomousMode(hardwareMap, 1);
+        AutonomousMode am = new AutonomousMode(this, 1);
         am.init();
     }
 }
