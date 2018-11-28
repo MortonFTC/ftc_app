@@ -1,234 +1,200 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
+import java.util.Locale;
+
+import static java.lang.Thread.sleep;
+
+@Disabled
 @TeleOp(name = "IMU_Test", group = "mortonElements")
-public class IMU_Test extends LinearOpMode {
+public class IMU_Test extends OpMode {
 
 //@Disabled
 
-    DcMotor                 leftMotor;
-    DcMotor                 rightMotor;
-    BNO055IMU               imu;
-    Orientation             lastAngles = new Orientation();
-    double globalAngle, power = .30, correction;
-    boolean                 aButton, bButton, touched;
+    //TODO Work in progress.
+    private DcMotor motorLeft;
+    private DcMotor motorRight;
 
-    // called when startAutonomousMode button is  pressed.
+    private Servo armServo1;
+    private Servo armServo2;
+    private Servo gripperServo1;
+    private Servo gripperServo2;
+
+    private final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
+
+    private double clawOffset = 0.0;
+    private final double MID_SERVO_claw = 0.5; //Default servo position
+
+
+    private double armOffset = 0.0;
+    private final double MID_SERVO_arm = 0.5; //Default servo position
+
+    // The IMU sensor object
+    private BNO055IMU imu;
+
+    // State used for updating telemetry
+    private Orientation angles;
+    private Acceleration gravity;
+
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
     @Override
-    public void runOpMode() throws InterruptedException
-    {
-        leftMotor = hardwareMap.dcMotor.get("motorLeft");
+    public void init() {
 
-        rightMotor = hardwareMap.dcMotor.get("motorRight");
-        rightMotor.setDirection(DcMotor.Direction.REVERSE);
+        motorLeft = hardwareMap.dcMotor.get("motorLeft");
+        motorRight = hardwareMap.dcMotor.get("motorRight");
 
-        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
+        armServo1 = hardwareMap.servo.get("armServo1");
+        armServo2 = hardwareMap.servo.get("armServo2");
+        gripperServo1 = hardwareMap.servo.get("gripperServo1");
+        gripperServo2 = hardwareMap.servo.get("gripperServo2");
+
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode                = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled      = false;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
         // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
         // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
         // and named "imu".
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-
         imu.initialize(parameters);
-
-        telemetry.addData("Mode", "calibrating...");
-        telemetry.update();
-
-        // make sure the imu gyro is calibrated before continuing.
-        while (!isStopRequested() && !imu.isGyroCalibrated())
-        {
-            sleep(50);
-            idle();
-        }
-
-        telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
-        telemetry.update();
-
-        // wait for start button.
-
-        waitForStart();
-
-        telemetry.addData("Mode", "running");
-        telemetry.update();
-
-        sleep(1000);
-
-        // drive until end of period.
-
-        while (opModeIsActive())
-        {
-            // Use gyro to drive in a straight line.
-            correction = checkDirection();
-
-            telemetry.addData("1 imu heading", lastAngles.firstAngle);
-            telemetry.addData("2 global heading", globalAngle);
-            telemetry.addData("3 correction", correction);
+        while (!imu.isGyroCalibrated()) {
+            telemetry.addData("Calibrating IMU Gyro", null);
             telemetry.update();
+            try {
+                sleep (1000);
+            } catch (Exception e) {}
 
-            leftMotor.setPower(-power + correction);
-            rightMotor.setPower(-power);
-
-            // We record the sensor values because we will test them in more than
-            // one place with time passing between those places. See the lesson on
-            // Timing Considerations to know why.
-
-            aButton = gamepad1.a;
-            bButton = gamepad1.b;
-
-            if (aButton || bButton)
-            {
-                // backup.
-                leftMotor.setPower(power);
-                rightMotor.setPower(power);
-
-                sleep(500);
-
-                // stop.
-                leftMotor.setPower(0);
-                rightMotor.setPower(0);
-
-                // turn 90 degrees right.
-                if (aButton) rotate(-90, power);
-
-                // turn 90 degrees left.
-                if (bButton) rotate(90, power);
-            }
         }
 
-        // turn the motors off.
-        rightMotor.setPower(0);
-        leftMotor.setPower(0);
+        // Set up our telemetry dashboard
+        composeTelemetry();
+        telemetry.update();
     }
 
-    /**
-     * Resets the cumulative angle tracking to zero.
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
      */
-    private void resetAngle()
-    {
-        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+    @Override
+    public void loop() {
 
-        globalAngle = 0;
-    }
+            motorLeft.setPower(-gamepad1.left_stick_y);
+            motorRight.setPower(-gamepad1.right_stick_y);
 
-    /**
-     * Get current cumulative angle rotation from last reset.
-     * @return Angle in degrees. + = left, - = right.
-     */
-    private double getAngle()
-    {
-        // We experimentally determined the Z axis is the axis we want to use for heading angle.
-        // We have to process the angle because the imu works in euler angles so the Z axis is
-        // returned as 0 to +180 or 0 to -180 rolling back to -179 or +179 when rotation passes
-        // 180 degrees. We detect this transition and track the total cumulative angle of rotation.
+            //Moves the arms
+            if (gamepad1.right_bumper)
+                armOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+            else if (gamepad1.left_bumper)
+                armOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
-
-        if (deltaAngle < -180)
-            deltaAngle += 360;
-        else if (deltaAngle > 180)
-            deltaAngle -= 360;
-
-        globalAngle += deltaAngle;
-
-        lastAngles = angles;
-
-        return globalAngle;
-    }
-
-    /**
-     * See if we are moving in a straight line and if not return a power correction value.
-     * @return Power adjustment, + is adjust left - is adjust right.
-     */
-    private double checkDirection()
-    {
-        // The gain value determines how sensitive the correction is to direction changes.
-        // You will have to experiment with your robot to get small smooth direction changes
-        // to stay on a straight line.
-        double correction, angle, gain = .10;
-
-        angle = getAngle();
-
-        if (angle == 0)
-            correction = 0;             // no adjustment.
-        else
-            correction = -angle;        // reverse sign of angle for correction.
-
-        correction = correction * gain;
-
-        return correction;
-    }
-
-    /**
-     * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
-     * @param degrees Degrees to turn, + is left - is right
-     */
-    private void rotate(int degrees, double power)
-    {
-        double  leftPower, rightPower;
-
-        // restart imu movement tracking.
-        resetAngle();
-
-        // getAngle() returns + when rotating counter clockwise (left) and - when rotating
-        // clockwise (right).
-
-        if (degrees < 0)
-        {   // turn right.
-            leftPower = -power;
-            rightPower = power;
+            if (gamepad1.right_trigger > 0)
+                clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+            else if (gamepad1.left_trigger > 0)
+                clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        composeTelemetry();
+        telemetry.update();
         }
-        else if (degrees > 0)
-        {   // turn left.
-            leftPower = power;
-            rightPower = -power;
-        }
-        else return;
 
-        // set power to rotate.
-        leftMotor.setPower(leftPower);
-        rightMotor.setPower(rightPower);
+    //----------------------------------------------------------------------------------------------
+    // Telemetry Configuration
+    //----------------------------------------------------------------------------------------------
 
-        // rotate until turn is completed.
-        if (degrees < 0)
+    private void composeTelemetry() {
+
+        // At the beginning of each telemetry update, grab a bunch of data
+        // from the IMU that we will then display in separate lines.
+        telemetry.addAction(new Runnable() { @Override public void run()
         {
-            // On right turn we have to get off zero first.
-            while (opModeIsActive() && getAngle() == 0) {}
-
-            while (opModeIsActive() && getAngle() > degrees) {}
+            // Acquiring the angles is relatively expensive; we don't want
+            // to do that in each of the three items that need that info, as that's
+            // three times the necessary expense.
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            gravity  = imu.getGravity();
         }
-        else    // left turn.
-            while (opModeIsActive() && getAngle() < degrees) {}
+        });
 
-        // turn the motors off.
-        rightMotor.setPower(0);
-        leftMotor.setPower(0);
+        telemetry.addLine()
+                .addData("status", new Func<String>() {
+                    @Override public String value() {
+                        return imu.getSystemStatus().toShortString();
+                    }
+                })
+                .addData("calib", new Func<String>() {
+                    @Override public String value() {
+                        return imu.getCalibrationStatus().toString();
+                    }
+                });
 
-        // wait for rotation to stop.
-        sleep(1000);
+        telemetry.addLine()
+                .addData("heading", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.firstAngle);
+                    }
+                })
+                .addData("roll", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.secondAngle);
+                    }
+                })
+                .addData("pitch", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.thirdAngle);
+                    }
+                });
 
-        // reset angle tracking on new heading.
-        resetAngle();
+        telemetry.addLine()
+                .addData("grvty", new Func<String>() {
+                    @Override public String value() {
+                        return gravity.toString();
+                    }
+                })
+                .addData("mag", new Func<String>() {
+                    @Override public String value() {
+                        return String.format(Locale.getDefault(), "%.3f",
+                                Math.sqrt(gravity.xAccel*gravity.xAccel
+                                        + gravity.yAccel*gravity.yAccel
+                                        + gravity.zAccel*gravity.zAccel));
+                    }
+                });
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Formatting
+    //----------------------------------------------------------------------------------------------
+
+    private String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    private String formatDegrees(double degrees){
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
 }
