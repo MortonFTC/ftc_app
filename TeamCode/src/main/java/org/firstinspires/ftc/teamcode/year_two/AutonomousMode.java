@@ -2,12 +2,17 @@ package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static java.lang.Thread.sleep;
 
@@ -33,16 +38,17 @@ public class AutonomousMode {
         this.hwMap = autonomousClass.hardwareMap;
 
         this.position = position;
+        this.autonomousClass = autonomousClass;
     }
 
-    public void init()
+    public void startAutonomousMode()
     {
         robot.init(hwMap);
-        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        //robot.leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        autonomousClass.waitForStart();
         unhook();
     }
 
@@ -55,6 +61,11 @@ public class AutonomousMode {
 
     public void drive(double leftInches, double rightInches, double power)
     {
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
         robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
 
@@ -67,7 +78,7 @@ public class AutonomousMode {
         robot.rightRearDrive.setPower(power);
     }
 
-    public void crabSteer(int direction, double inches, double power) //0 = left, 1 = right
+    /*public void crabSteer(int direction, double inches, double power) //0 = left, 1 = right
     {
         double modifiedInches = inches * 3;
 
@@ -103,6 +114,27 @@ public class AutonomousMode {
             robot.rightFrontDrive.setPower(power);
             robot.rightRearDrive.setPower(power);
         }
+    }*/
+
+    public void crabSteer(int direction, double miliseconds, double power) //left = 0, right = 1
+    {
+        long time = System.currentTimeMillis();
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //This crabsteers right
+        while (System.currentTimeMillis() < time + 5000)
+        {
+            robot.leftFrontDrive.setPower(-.5);
+            robot.leftRearDrive.setPower(.5);
+            robot.rightFrontDrive.setPower(-.5);
+            robot.rightRearDrive.setPower(.5);
+            autonomousClass.telemetry.addData("is it running?", "YEAH!");
+        }
+
+        autonomousClass.telemetry.addData("EXITING", "YEAH!");
     }
 
     private double getAngle()

@@ -29,11 +29,9 @@
 
 package org.firstinspires.ftc.teamcode.year_two;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file provides basic Telop driving for a Mecanum robot.
@@ -85,7 +83,7 @@ public class Teleop2018 extends OpMode {
         //robot.armMidRightIn.setPosition(0.966);
         robot.armMidRightOut.setPosition(1);
         robot.armMidRightIn.setPosition(0);
-        //robot.armUpperRight.setPosition(0.0517);
+        //robot.hookServo.setPosition(0.0517);
         //robot.armUpperLeft.setPosition(0.9742);
         */
 
@@ -234,12 +232,12 @@ public class Teleop2018 extends OpMode {
         }
 
         if (g_button_y) {
-            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() + SERVO_RATE_OF_CHANGE);
-            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - SERVO_RATE_OF_CHANGE);
+            robot.hookServo.setPosition(robot.hookServo.getPosition() + SERVO_RATE_OF_CHANGE);
+            //robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() - SERVO_RATE_OF_CHANGE);
         }
         if (g_button_a) {
-            robot.armUpperRight.setPosition(robot.armUpperRight.getPosition() - SERVO_RATE_OF_CHANGE);
-            robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() + SERVO_RATE_OF_CHANGE);
+            robot.hookServo.setPosition(robot.hookServo.getPosition() - SERVO_RATE_OF_CHANGE);
+            //robot.armUpperLeft.setPosition(robot.armUpperLeft.getPosition() + SERVO_RATE_OF_CHANGE);
         }
 
         //Activating the brushes.
@@ -319,9 +317,9 @@ public class Teleop2018 extends OpMode {
         if (armMidRightIn != null)
             robot.armMidRightIn.setPosition(armMidRightIn);
         if (armUpperRight != null)
-            robot.armUpperRight.setPosition(armUpperRight);
-        if (armUpperLeft != null)
-            robot.armUpperLeft.setPosition(armUpperLeft);
+            robot.hookServo.setPosition(armUpperRight);
+        //if (armUpperLeft != null)
+           // robot.armUpperLeft.setPosition(armUpperLeft);
     }
 }
 

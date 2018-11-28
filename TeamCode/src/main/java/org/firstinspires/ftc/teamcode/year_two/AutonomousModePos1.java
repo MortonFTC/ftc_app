@@ -8,6 +8,6 @@ public class AutonomousModePos1 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         AutonomousMode am = new AutonomousMode(this, 1);
-        am.init();
+        am.startAutonomousMode();
     }
 }

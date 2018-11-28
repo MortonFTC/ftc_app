@@ -24,7 +24,7 @@ public class IMU_Test extends LinearOpMode {
     double globalAngle, power = .30, correction;
     boolean                 aButton, bButton, touched;
 
-    // called when init button is  pressed.
+    // called when startAutonomousMode button is  pressed.
     @Override
     public void runOpMode() throws InterruptedException
     {

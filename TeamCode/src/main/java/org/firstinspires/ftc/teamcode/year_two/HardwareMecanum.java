@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.teamcode.year_two;
 
-import android.graphics.Color;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -54,7 +52,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
     //armMidLeftIn SERVO = HUB LEFT - POS = 2
     //armMidLeftOut SERVO = HUB LEFT - POS = 3
     //door SERVO = HUB RIGHT - POS = 0
-    //armUpperRight SERVO = HUB RIGHT - POS = 1
+    //hookServo SERVO = HUB RIGHT - POS = 1
     //armMidRightIn SERVO = HUB RIGHT - POS = 2
     //armMidRightOut SERVO = HUB RIGHT - POS = 3
 
@@ -73,8 +71,8 @@ public class HardwareMecanum
     public Servo armMidLeftIn = null;
     public Servo armMidRightOut = null;
     public Servo armMidRightIn = null;
-    public Servo armUpperRight = null;
-    public Servo armUpperLeft = null;
+    public Servo hookServo = null;
+  // public Servo armUpperLeft = null;
 
     public Servo singleMastDrive = null;
     public Servo hook = null;
@@ -115,13 +113,13 @@ public class HardwareMecanum
 
         armLowerRight = hwMap.get(DcMotor.class, "armLowerRight");
 
-        armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
         armMidLeftIn = hwMap.get(Servo.class, "armMidLeftIn");
         armMidRightOut = hwMap.get(Servo.class, "armMidRightOut");
         armMidRightIn = hwMap.get(Servo.class, "armMidRightIn");
+        armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
 
-        armUpperRight = hwMap.get(Servo.class, "armUpperRight");
-        armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
+        hookServo = hwMap.get(Servo.class, "hookServo");
+        //armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
 
         //singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
         //doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");

@@ -69,7 +69,7 @@ public class MecanumTeleop_Creotion_dPadShift extends OpMode{
     @Override
     public void init() {
         /* Initialize the hardware variables.
-         * The init() method of the hardware class does all the work here
+         * The startAutonomousMode() method of the hardware class does all the work here
          */
         robot.init(hardwareMap);
 
