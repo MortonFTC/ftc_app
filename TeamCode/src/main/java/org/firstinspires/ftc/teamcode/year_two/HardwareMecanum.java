@@ -74,11 +74,7 @@ public class HardwareMecanum
     public Servo hookServo = null;
   // public Servo armUpperLeft = null;
 
-    public Servo singleMastDrive = null;
-    public Servo hook = null;
     public Servo door = null;
-    public Servo doubleMastDrive1 = null;
-    public Servo doubleMastDrive2 = null;
 
     public CRServo brush = null;
 

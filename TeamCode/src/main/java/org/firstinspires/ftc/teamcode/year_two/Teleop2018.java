@@ -219,13 +219,15 @@ public class Teleop2018 extends OpMode {
             if (-g_left_y > .3 ) { //If joystick is up.
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
                 robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() - ARM_LOWER_RATE_OF_CHANGE);
-                armLowerOffset += ARM_LOWER_RATE_OF_CHANGE;
-            }
-            else if (-g_left_y < -.3) { //If joystick is up.
-                //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
-                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE);
                 armLowerOffset -= ARM_LOWER_RATE_OF_CHANGE;
             }
+            else if (-g_left_y < -.3) { //If joystick is down.
+                //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
+                robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + ARM_LOWER_RATE_OF_CHANGE);
+                armLowerOffset += ARM_LOWER_RATE_OF_CHANGE;
+            }
+
+            telemetry.addData("armLowerOffset", armLowerOffset);
 
             //robot.armLowerLeft.setPower(.05); //TODO If arm keeps moving after joystick released, increase this value.
             robot.armLowerRight.setPower(1);

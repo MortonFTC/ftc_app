@@ -49,14 +49,43 @@ public class AutonomousMode {
         //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         autonomousClass.waitForStart();
+        autonomousClass.telemetry.addData("Still running", 0);
         unhook();
+        autonomousClass.telemetry.addData("Still running", 22);
     }
 
     public void unhook()
     {
-        int rightAngleCounts = 9100;
-        //robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + rightAngleCounts);
-        crabSteer(0, 1, 1);
+        autonomousClass.telemetry.addData("Still running", 1);
+        autonomousClass.telemetry.update();
+        robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + 300);
+        robot.armLowerRight.setPower(-1);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        autonomousClass.telemetry.addData("Still running", 2);
+        autonomousClass.telemetry.update();
+        robot.hookServo.setPosition(0.2);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        autonomousClass.telemetry.addData("Still running", 3);
+        autonomousClass.telemetry.update();
+        robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + 9000);
+        robot.armLowerRight.setPower(1);
+        autonomousClass.telemetry.addData("Still running", 4);
+        autonomousClass.telemetry.update();
+        //crabSteer(1, 500, .5);
     }
 
     public void drive(double leftInches, double rightInches, double power)
@@ -118,22 +147,32 @@ public class AutonomousMode {
 
     public void crabSteer(int direction, double miliseconds, double power) //left = 0, right = 1
     {
-        long time = System.currentTimeMillis();
-
         robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //This crabsteers right
-        while (System.currentTimeMillis() < time + 5000)
+
+        long time = System.currentTimeMillis();
+        double powerFinal = Math.abs(power);
+
+        while (System.currentTimeMillis() < time + miliseconds)
         {
-            robot.leftFrontDrive.setPower(-.5);
-            robot.leftRearDrive.setPower(.5);
-            robot.rightFrontDrive.setPower(-.5);
-            robot.rightRearDrive.setPower(.5);
+            if (direction == 0)
+            {
+                robot.leftFrontDrive.setPower(powerFinal);
+                robot.leftRearDrive.setPower(-powerFinal);
+                robot.rightFrontDrive.setPower(powerFinal);
+                robot.rightRearDrive.setPower(-powerFinal);
+            }
+            else if (direction == 1)
+            {
+                robot.leftFrontDrive.setPower(-powerFinal);
+                robot.leftRearDrive.setPower(powerFinal);
+                robot.rightFrontDrive.setPower(-powerFinal);
+                robot.rightRearDrive.setPower(powerFinal);
+            }
             autonomousClass.telemetry.addData("is it running?", "YEAH!");
         }
-
         autonomousClass.telemetry.addData("EXITING", "YEAH!");
     }
 
@@ -209,6 +248,12 @@ public class AutonomousMode {
         else return;
 
         // set power to rotate.
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         robot.leftFrontDrive.setPower(leftPower);
         robot.leftFrontDrive.setPower(leftPower);
 
