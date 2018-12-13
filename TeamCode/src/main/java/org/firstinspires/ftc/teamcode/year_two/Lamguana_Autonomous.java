@@ -29,13 +29,26 @@
 
 package org.firstinspires.ftc.teamcode.year_two;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+
+import java.util.Locale;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
@@ -46,9 +59,6 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  *
  * The code REQUIRES that you DO have encoders on the wheels,
  *   otherwise you would use: PushbotAutoDriveByTime;
- *
- *  This code ALSO requires that you have a Modern Robotics I2C gyro with the name "gyro"
- *   otherwise you would use: PushbotAutoDriveByEncoder;
  *
  *  This code requires that the drive Motors have been configured such that a positive
  *  power command moves them forward, and causes the encoders to count UP.
@@ -73,17 +83,14 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  */
 
 @Autonomous(name="Lamguana_Autonomous", group="Lamguana")
-@Disabled
+//@Disabled
 public class Lamguana_Autonomous extends LinearOpMode {
 
-    /* Declare OpMode members. */
-    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
-    ModernRoboticsI2cGyro   gyro    = null;                    // Additional Gyro device
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 6.0 ;     // For figuring circumference
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
+            (WHEEL_DIAMETER_INCHES * 3.1415);
 
     // These constants define the desired driving/control characteristics
     // The can/should be tweaked to suite the specific robot drive train.
@@ -94,28 +101,59 @@ public class Lamguana_Autonomous extends LinearOpMode {
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
 
+    private DcMotor motorLeft;
+    private DcMotor motorRight;
+
+    private Servo armServo1;
+    private Servo armServo2;
+    private Servo gripperServo1;
+    private Servo gripperServo2;
+
+    // The IMU sensor object
+    BNO055IMU imu;
+
+    // State used for updating telemetry
+    Orientation angles;
+    Acceleration gravity;
 
     @Override
     public void runOpMode() {
 
-        /*
-         * Initialize the standard drive system variables.
-         * The init() method of the hardware class does most of the work here
-         */
-        robot.init(hardwareMap);
+        motorLeft = hardwareMap.dcMotor.get("motorLeft");
+        motorRight = hardwareMap.dcMotor.get("motorRight");
 
-        // Ensure the robot it stationary, then reset the encoders and calibrate the gyro.
-        robot.leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        armServo1 = hardwareMap.servo.get("armServo1");
+        armServo2 = hardwareMap.servo.get("armServo2");
+        gripperServo1 = hardwareMap.servo.get("gripperServo1");
+        gripperServo2 = hardwareMap.servo.get("gripperServo2");
+        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        //parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        //parameters.loggingEnabled      = true;
+        //parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         // Send telemetry message to alert driver that we are calibrating;
-        telemetry.addData(">", "Calibrating Gyro");    //
+        telemetry.addData(">", "Calibrating IMU");    //
         telemetry.update();
 
-        gyro.calibrate();
-
         // make sure the gyro is calibrated before continuing
-        while (!isStopRequested() && gyro.isCalibrating())  {
+        while (!isStopRequested() && !imu.isGyroCalibrated())  {
             sleep(50);
             idle();
         }
@@ -123,16 +161,27 @@ public class Lamguana_Autonomous extends LinearOpMode {
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
 
-        robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        sleep(1000);
+        idle();
+
+        // Set up our telemetry dashboard
+        composeTelemetry();
+        telemetry.update();
+
+        sleep(1000);
+        idle();
+
+        motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
-            telemetry.addData(">", "Robot Heading = %d", gyro.getIntegratedZValue());
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            telemetry.addData(">", "Robot Heading = %d", angles.firstAngle);
             telemetry.update();
         }
 
-        gyro.resetZAxisIntegrator();
+        //gyro.resetZAxisIntegrator();
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
@@ -152,18 +201,18 @@ public class Lamguana_Autonomous extends LinearOpMode {
     }
 
 
-   /**
-    *  Method to drive on a fixed compass bearing (angle), based on encoder counts.
-    *  Move will stop if either of these conditions occur:
-    *  1) Move gets to the desired position
-    *  2) Driver stops the opmode running.
-    *
-    * @param speed      Target speed for forward motion.  Should allow for _/- variance for adjusting heading
-    * @param distance   Distance (in inches) to move from current position.  Negative distance means move backwards.
-    * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
-    *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
-    *                   If a relative angle is required, add/subtract from current heading.
-    */
+    /**
+     *  Method to drive on a fixed compass bearing (angle), based on encoder counts.
+     *  Move will stop if either of these conditions occur:
+     *  1) Move gets to the desired position
+     *  2) Driver stops the opmode running.
+     *
+     * @param speed      Target speed for forward motion.  Should allow for _/- variance for adjusting heading
+     * @param distance   Distance (in inches) to move from current position.  Negative distance means move backwards.
+     * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
+     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                   If a relative angle is required, add/subtract from current heading.
+     */
     public void gyroDrive ( double speed,
                             double distance,
                             double angle) {
@@ -182,24 +231,24 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
             // Determine new target position, and pass to motor controller
             moveCounts = (int)(distance * COUNTS_PER_INCH);
-            newLeftTarget = robot.leftDrive.getCurrentPosition() + moveCounts;
-            newRightTarget = robot.rightDrive.getCurrentPosition() + moveCounts;
+            newLeftTarget = motorLeft.getCurrentPosition() + moveCounts;
+            newRightTarget = motorRight.getCurrentPosition() + moveCounts;
 
             // Set Target and Turn On RUN_TO_POSITION
-            robot.leftDrive.setTargetPosition(newLeftTarget);
-            robot.rightDrive.setTargetPosition(newRightTarget);
+            motorLeft.setTargetPosition(newLeftTarget);
+            motorRight.setTargetPosition(newRightTarget);
 
-            robot.leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // start motion.
             speed = Range.clip(Math.abs(speed), 0.0, 1.0);
-            robot.leftDrive.setPower(speed);
-            robot.rightDrive.setPower(speed);
+            motorLeft.setPower(speed);
+            motorRight.setPower(speed);
 
             // keep looping while we are still active, and BOTH motors are running.
             while (opModeIsActive() &&
-                   (robot.leftDrive.isBusy() && robot.rightDrive.isBusy())) {
+                    (motorLeft.isBusy() && motorRight.isBusy())) {
 
                 // adjust relative speed based on heading error.
                 error = getError(angle);
@@ -220,25 +269,25 @@ public class Lamguana_Autonomous extends LinearOpMode {
                     rightSpeed /= max;
                 }
 
-                robot.leftDrive.setPower(leftSpeed);
-                robot.rightDrive.setPower(rightSpeed);
+                motorLeft.setPower(leftSpeed);
+                motorRight.setPower(rightSpeed);
 
                 // Display drive status for the driver.
                 telemetry.addData("Err/St",  "%5.1f/%5.1f",  error, steer);
                 telemetry.addData("Target",  "%7d:%7d",      newLeftTarget,  newRightTarget);
-                telemetry.addData("Actual",  "%7d:%7d",      robot.leftDrive.getCurrentPosition(),
-                                                             robot.rightDrive.getCurrentPosition());
+                telemetry.addData("Actual",  "%7d:%7d",      motorLeft.getCurrentPosition(),
+                        motorRight.getCurrentPosition());
                 telemetry.addData("Speed",   "%5.2f:%5.2f",  leftSpeed, rightSpeed);
                 telemetry.update();
             }
 
             // Stop all motion;
-            robot.leftDrive.setPower(0);
-            robot.rightDrive.setPower(0);
+            motorLeft.setPower(0);
+            motorRight.setPower(0);
 
             // Turn off RUN_TO_POSITION
-            robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
@@ -285,8 +334,8 @@ public class Lamguana_Autonomous extends LinearOpMode {
         }
 
         // Stop all motion;
-        robot.leftDrive.setPower(0);
-        robot.rightDrive.setPower(0);
+        motorLeft.setPower(0);
+        motorRight.setPower(0);
     }
 
     /**
@@ -322,8 +371,8 @@ public class Lamguana_Autonomous extends LinearOpMode {
         }
 
         // Send desired speeds to motors.
-        robot.leftDrive.setPower(leftSpeed);
-        robot.rightDrive.setPower(rightSpeed);
+        motorLeft.setPower(leftSpeed);
+        motorRight.setPower(rightSpeed);
 
         // Display it for the driver.
         telemetry.addData("Target", "%5.2f", angle);
@@ -344,7 +393,8 @@ public class Lamguana_Autonomous extends LinearOpMode {
         double robotError;
 
         // calculate error in -179 to +180 range  (
-        robotError = targetAngle - gyro.getIntegratedZValue();
+        //robotError = targetAngle - gyro.getIntegratedZValue();
+        robotError = targetAngle - angles.firstAngle;
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
         return robotError;
@@ -359,5 +409,79 @@ public class Lamguana_Autonomous extends LinearOpMode {
     public double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
     }
+    //----------------------------------------------------------------------------------------------
+    // Telemetry Configuration
+    //----------------------------------------------------------------------------------------------
 
+    void composeTelemetry() {
+
+        // At the beginning of each telemetry update, grab a bunch of data
+        // from the IMU that we will then display in separate lines.
+        telemetry.addAction(new Runnable() { @Override public void run()
+        {
+            // Acquiring the angles is relatively expensive; we don't want
+            // to do that in each of the three items that need that info, as that's
+            // three times the necessary expense.
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            gravity  = imu.getGravity();
+        }
+        });
+
+        telemetry.addLine()
+                .addData("status", new Func<String>() {
+                    @Override public String value() {
+                        return imu.getSystemStatus().toShortString();
+                    }
+                })
+                .addData("calib", new Func<String>() {
+                    @Override public String value() {
+                        return imu.getCalibrationStatus().toString();
+                    }
+                });
+
+        telemetry.addLine()
+                .addData("heading", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.firstAngle);
+                    }
+                })
+                .addData("roll", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.secondAngle);
+                    }
+                })
+                .addData("pitch", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.thirdAngle);
+                    }
+                });
+
+        telemetry.addLine()
+                .addData("grvty", new Func<String>() {
+                    @Override public String value() {
+                        return gravity.toString();
+                    }
+                })
+                .addData("mag", new Func<String>() {
+                    @Override public String value() {
+                        return String.format(Locale.getDefault(), "%.3f",
+                                Math.sqrt(gravity.xAccel*gravity.xAccel
+                                        + gravity.yAccel*gravity.yAccel
+                                        + gravity.zAccel*gravity.zAccel));
+                    }
+                });
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // Formatting
+    //----------------------------------------------------------------------------------------------
+
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees){
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
 }
+
