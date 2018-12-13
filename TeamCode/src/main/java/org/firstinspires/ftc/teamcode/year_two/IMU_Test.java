@@ -63,7 +63,7 @@ public class IMU_Test extends LinearOpMode {
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
 
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
 
         armServo1 = hardwareMap.servo.get("armServo1");
         armServo2 = hardwareMap.servo.get("armServo2");
@@ -103,10 +103,12 @@ public class IMU_Test extends LinearOpMode {
 
         while(opModeIsActive()) {
 
-            if (gamepad1.left_stick_y) {
-                motorLeft.setPower(-gamepad1.left_stick_y);
-                motorRight.setPower(-gamepad1.right_stick_y);
+            //originally motoLeft direction was reversed above and then stick value negated below
+            //switch right motor reversed so values below don't have to be negated.
+             motorLeft.setPower(gamepad1.left_stick_y);
+             motorRight.setPower(gamepad1.right_stick_y);
 
+             if (gamepad1.a) {
                 composeTelemetry();
                 telemetry.update();
             }
