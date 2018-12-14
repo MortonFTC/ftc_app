@@ -93,6 +93,10 @@ public class HardwareMecanum
     static final double ARM_MOTOR_REVS_PER_SHAFT_REV = 28;
     static final double WHEELS_COUNTS_PER_SHAFT_REV = 1400;
 
+    final int WHEEL_DIAMETER_INCHES = 6;
+    final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_INCHES * Math.PI;
+    final double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
+
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private ElapsedTime period  = new ElapsedTime();

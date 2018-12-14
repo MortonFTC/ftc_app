@@ -23,9 +23,6 @@ public class AutonomousMode {
 
     int position; //Either a 0 or a 1.
 
-    final int WHEEL_DIAMETER_INCHES = 6;
-    final double WHEEL_CIRCUMFERENCE = 6 * Math.PI;
-
     HardwareMap hwMap;
 
     Orientation lastAngles = new Orientation();
@@ -88,6 +85,7 @@ public class AutonomousMode {
         //crabSteer(1, 500, .5);
     }
 
+    /*
     public void drive(double leftInches, double rightInches, double power)
     {
         robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -95,17 +93,17 @@ public class AutonomousMode {
         robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
-        robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * leftInches))));
+        robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * leftInches))));
+        robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * leftInches))));
 
-        robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * rightInches)));
-        robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * rightInches)));
+        robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * rightInches)));
+        robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * rightInches)));
 
         robot.leftFrontDrive.setPower(power);
         robot.leftRearDrive.setPower(power);
         robot.rightFrontDrive.setPower(power);
         robot.rightRearDrive.setPower(power);
-    }
+    }*/
 
     /*public void crabSteer(int direction, double inches, double power) //0 = left, 1 = right
     {
@@ -288,5 +286,78 @@ public class AutonomousMode {
         lastAngles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         globalAngle = 0;
+    }
+
+    public void encoderDrive(double speed,
+                             double leftInches, double rightInches,
+                             double timeoutS) {
+        int newLeftFrontTarget;
+        int newRightFrontTarget;
+        int newLeftRearTarget;
+        int newRightRearTarget;
+
+        // negate left-side motors due position on robot
+        leftInches = -leftInches;
+
+        // Ensure that the opmode is still active
+        if (autonomousClass.opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int)(leftInches * robot.COUNTS_PER_INCH);
+            newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int)(rightInches * robot.COUNTS_PER_INCH);
+            newLeftRearTarget = robot.leftRearDrive.getCurrentPosition() + (int)(leftInches * robot.COUNTS_PER_INCH);
+            newRightRearTarget = robot.rightRearDrive.getCurrentPosition() + (int)(rightInches * robot.COUNTS_PER_INCH);
+            robot.leftFrontDrive.setTargetPosition(newLeftFrontTarget);
+            robot.rightFrontDrive.setTargetPosition(newRightFrontTarget);
+            robot.leftRearDrive.setTargetPosition(newLeftRearTarget);
+            robot.rightRearDrive.setTargetPosition(newRightRearTarget);
+
+            // Turn On RUN_TO_POSITION
+            robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            robot.leftFrontDrive.setPower(speed);
+            robot.rightFrontDrive.setPower(speed);
+            robot.leftRearDrive.setPower(speed);
+            robot.rightRearDrive.setPower(speed);
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when ANY motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (autonomousClass.opModeIsActive() &&
+                    (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() &&
+                            robot.leftRearDrive.isBusy() && robot.rightRearDrive.isBusy())) {
+
+                // Display it for the driver.
+                autonomousClass.telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d",
+                        newLeftFrontTarget,  newRightFrontTarget, newLeftRearTarget, newRightRearTarget);
+                autonomousClass.telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
+                        robot.leftFrontDrive.getCurrentPosition(),
+                        robot.rightFrontDrive.getCurrentPosition(),
+                        robot.leftRearDrive.getCurrentPosition(),
+                        robot.rightRearDrive.getCurrentPosition());
+                autonomousClass.telemetry.update();
+            }
+
+            // Stop all motion;
+            robot.leftFrontDrive.setPower(0);
+            robot.rightFrontDrive.setPower(0);
+            robot.leftRearDrive.setPower(0);
+            robot.rightRearDrive.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
+        }
     }
 }
