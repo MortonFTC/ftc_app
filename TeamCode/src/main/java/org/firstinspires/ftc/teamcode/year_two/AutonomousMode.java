@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static java.lang.Thread.sleep;
 
@@ -38,26 +34,26 @@ public class AutonomousMode {
         this.autonomousClass = autonomousClass;
     }
 
-    public void startAutonomousMode()
-    {
+    public void startAutonomousMode() throws InterruptedException {
         robot.init(hwMap);
 
         //robot.leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         autonomousClass.waitForStart();
-        autonomousClass.telemetry.addData("Still running", 0);
-        unhook();
-        autonomousClass.telemetry.addData("Still running", 22);
+
+        encoderCrabsteer(0, 5, .3);
+
+        encoderDrive(.3, 120, 120, 20);
     }
 
     public void unhook()
     {
         autonomousClass.telemetry.addData("Still running", 1);
         autonomousClass.telemetry.update();
-        robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + 300);
-        robot.armLowerRight.setPower(-1);
+        robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 300);
+        robot.armLower.setPower(-1);
 
         try {
             Thread.sleep(1000);
@@ -77,9 +73,9 @@ public class AutonomousMode {
 
         autonomousClass.telemetry.addData("Still running", 3);
         autonomousClass.telemetry.update();
-        robot.armLowerRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.armLowerRight.setTargetPosition(robot.armLowerRight.getCurrentPosition() + 9000);
-        robot.armLowerRight.setPower(1);
+        robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 9000);
+        robot.armLower.setPower(1);
         autonomousClass.telemetry.addData("Still running", 4);
         autonomousClass.telemetry.update();
         //crabSteer(1, 500, .5);
@@ -143,7 +139,7 @@ public class AutonomousMode {
         }
     }*/
 
-    public void crabSteer(int direction, double miliseconds, double power) //left = 0, right = 1
+    public void crabSteer(int direction, double miliseconds, double power) throws InterruptedException //left = 0, right = 1
     {
         robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -172,6 +168,53 @@ public class AutonomousMode {
             autonomousClass.telemetry.addData("is it running?", "YEAH!");
         }
         autonomousClass.telemetry.addData("EXITING", "YEAH!");
+        sleep(1000);
+    }
+
+    public void encoderCrabsteer(int direction, double inches, double power) throws InterruptedException //left = 0, right = 1
+    {
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        double powerFinal = Math.abs(power);
+
+        double countsToMove = inches * robot.COUNTS_PER_INCH;
+
+        if (direction == 0)
+        {
+            robot.leftFrontDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() + countsToMove));
+            robot.leftRearDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() - countsToMove));
+            robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() + countsToMove));
+            robot.rightRearDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() - countsToMove));
+
+            robot.leftFrontDrive.setPower(powerFinal);
+            robot.leftRearDrive.setPower(-powerFinal);
+            robot.rightFrontDrive.setPower(powerFinal);
+            robot.rightRearDrive.setPower(-powerFinal);
+        }
+        else if (direction == 1)
+        {
+            robot.leftFrontDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() - countsToMove));
+            robot.leftRearDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() + countsToMove));
+            robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() - countsToMove));
+            robot.rightRearDrive.setTargetPosition((int) Math.round(robot.leftFrontDrive.getCurrentPosition() + countsToMove));
+
+            robot.leftFrontDrive.setPower(-powerFinal);
+            robot.leftRearDrive.setPower(powerFinal);
+            robot.rightFrontDrive.setPower(-powerFinal);
+            robot.rightRearDrive.setPower(powerFinal);
+        }
+        autonomousClass.telemetry.addData("is it running?", "YEAH!");
+
+        autonomousClass.telemetry.addData("EXITING", "YEAH!");
+        sleep(1000);
     }
 
     private double getAngle()
