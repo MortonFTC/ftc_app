@@ -98,10 +98,10 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
-        /*
         armLower = hwMap.get(DcMotor.class, "armLower");
         armUpper = hwMap.get(DcMotor.class, "armUpper");
 
+        /*
         hookServo = hwMap.get(Servo.class, "hookServo");
         brush = hwMap.get(CRServo.class, "brush");
         door = hwMap.get(Servo.class, "door");

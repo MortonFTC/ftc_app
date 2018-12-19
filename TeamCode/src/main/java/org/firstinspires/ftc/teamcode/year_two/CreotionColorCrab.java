@@ -28,8 +28,7 @@ public class CreotionColorCrab extends LinearOpMode {
         crabSteer(0, 5000.0, .3);
     }
 
-    public void crabSteer(int direction, double miliseconds, double power) //left = 0, right = 1
-    {
+    public void crabSteer(int direction, double miliseconds, double power) { //left = 0, right = 1
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
