@@ -352,7 +352,7 @@ public class AutonomousMode {
         return false;
     }
 
-    public void unhook () {
+    public void unhook() {
         autonomousClass.telemetry.addData("Still running", 1);
         autonomousClass.telemetry.update();
         robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -367,7 +367,7 @@ public class AutonomousMode {
 
         autonomousClass.telemetry.addData("Still running", 2);
         autonomousClass.telemetry.update();
-        robot.hookServo.setPosition(0.2);
+        //robot.hookServo.setPosition(0.2);
 
         try {
             Thread.sleep(1000);
@@ -443,60 +443,58 @@ public class AutonomousMode {
         }
     }*/
 
-            public void crabSteer ( int direction, double miliseconds, double power) throws
+    public void crabSteer(int direction, double miliseconds, double power) throws
             InterruptedException //left = 0, right = 1
-            {
-                robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    {
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                long time = System.currentTimeMillis();
-                double powerFinal = Math.abs(power);
+        long time = System.currentTimeMillis();
+        double powerFinal = Math.abs(power);
 
-                while (System.currentTimeMillis() < time + miliseconds) {
-                    if (direction == 0) {
-                        robot.leftFrontDrive.setPower(powerFinal);
-                        robot.leftRearDrive.setPower(-powerFinal);
-                        robot.rightFrontDrive.setPower(powerFinal);
-                        robot.rightRearDrive.setPower(-powerFinal);
-                    } else if (direction == 1) {
-                        robot.leftFrontDrive.setPower(-powerFinal);
-                        robot.leftRearDrive.setPower(powerFinal);
-                        robot.rightFrontDrive.setPower(-powerFinal);
-                        robot.rightRearDrive.setPower(powerFinal);
-                    }
-                    autonomousClass.telemetry.addData("is it running?", "YEAH!");
-                }
-                autonomousClass.telemetry.addData("EXITING", "YEAH!");
-                sleep(1000);
+        while (System.currentTimeMillis() < time + miliseconds) {
+            if (direction == 0) {
+                robot.leftFrontDrive.setPower(powerFinal);
+                robot.leftRearDrive.setPower(-powerFinal);
+                robot.rightFrontDrive.setPower(powerFinal);
+                robot.rightRearDrive.setPower(-powerFinal);
+            } else if (direction == 1) {
+                robot.leftFrontDrive.setPower(-powerFinal);
+                robot.leftRearDrive.setPower(powerFinal);
+                robot.rightFrontDrive.setPower(-powerFinal);
+                robot.rightRearDrive.setPower(powerFinal);
             }
-
-            private void initVuforia () {
-                /*
-                 * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-                 */
-                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-                parameters.vuforiaLicenseKey = VUFORIA_KEY;
-                parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-
-                //  Instantiate the Vuforia engine
-                vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-                // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
-            }
-
-            /**
-             * Initialize the Tensor Flow Object Detection engine.
-             */
-            private void initTfod () {
-                int tfodMonitorViewId = autonomousClass.hardwareMap.appContext.getResources().getIdentifier(
-                        "tfodMonitorViewId", "id", autonomousClass.hardwareMap.appContext.getPackageName());
-                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
-            }
+            autonomousClass.telemetry.addData("is it running?", "YEAH!");
         }
+        autonomousClass.telemetry.addData("EXITING", "YEAH!");
+        sleep(1000);
+    }
+
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+    }
+
+    /**
+     * Initialize the Tensor Flow Object Detection engine.
+     */
+    private void initTfod() {
+        int tfodMonitorViewId = autonomousClass.hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", autonomousClass.hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 }

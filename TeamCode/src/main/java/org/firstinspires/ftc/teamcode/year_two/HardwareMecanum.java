@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -68,12 +69,12 @@ public class HardwareMecanum
     public DcMotor armUpper = null;
 
     // Servos
-    public Servo hookServo = null;
     public Servo door = null;
     public CRServo brush = null;
 
     //Sensors
     public BNO055IMU imu = null;
+    public TouchSensor upperArmLimitSwitch = null;
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
 
     static final double ARM_LOWER_COUNTS_PER_MOTOR_REV = 1300;    // eg: TETRIX Motor Encoder
@@ -101,15 +102,12 @@ public class HardwareMecanum
         armLower = hwMap.get(DcMotor.class, "armLower");
         armUpper = hwMap.get(DcMotor.class, "armUpper");
 
-        /*
-        hookServo = hwMap.get(Servo.class, "hookServo");
-        brush = hwMap.get(CRServo.class, "brush");
-        door = hwMap.get(Servo.class, "door");
+        //brush = hwMap.get(CRServo.class, "brush");
+        //door = hwMap.get(Servo.class, "door");
 
-        colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
         imu = hwMap.get(BNO055IMU.class, "imu");
+        upperArmLimitSwitch = hwMap.get(TouchSensor.class, "upperArmLimitSwitch");
 
-        */
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);
