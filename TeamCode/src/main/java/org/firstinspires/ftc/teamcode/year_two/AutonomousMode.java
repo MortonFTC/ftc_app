@@ -52,60 +52,109 @@ public class AutonomousMode {
         initVuforia();
         initTfod();
 
+        tfod.activate();
+
         //robot.leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         autonomousClass.waitForStart();
 
-        encoderCrabsteer(0, 5, .3);
-
-        encoderDrive(.3, 120, 120, 20);
+        robot.flipperServo.setPosition(0);
 
         int goldMineralPosition = 0;
         boolean positionDecided = false;
 
         if (position == 1) {
-            encoderDrive(.15, 24, 24, 10);
+
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
+            autonomousClass.telemetry.update();
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+
+            robot.armLower.setPower(.3);
+            Thread.sleep(7000);
+
+            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
+            autonomousClass.telemetry.update();
+
+            encoderCrabsteer(0, 5, .5);
+
+            //TODO Reset lower arm encoders
+
+            if (goldMineralIsPresent())
+            {
+                autonomousClass.telemetry.addData("Gold Mineral Detected", "yeah");
+            }
+            else
+            {
+                autonomousClass.telemetry.addData("Gold Mineral Detected", "nope");
+            }
+
+
+            encoderDrive(.15, 13, 13, 10);
             sleep(250);
 
-            encoderCrabsteer(1, 20, .3);
-            sleep(250);
+            encoderCrabsteer(1, 25, .3);
+            sleep(5000);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 1;
                 positionDecided = true;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
+
+                robot.flipperServo.setPosition(.4);
+
+                sleep(500);
+
+                encoderDrive(.15, 11, 11, 10);
+
+                sleep(2500);
+
+                robot.flipperServo.setPosition(.5);
+
+                sleep(500);
+
+                encoderDrive(.15, -11, -11, 10);
+
+                sleep(2500);
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(250);
+            sleep(5000);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 2;
                 positionDecided = true;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(250);
+            sleep(5000);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 3;
                 positionDecided = true;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
             }
-
 
             if (positionDecided == false) {
 
             }
 
-            encoderCrabsteer(0, 20, .3);
-            sleep(250);
-            encoderDrive(.3, -5, 5, 10); //Turn parallel to wall.
+            encoderCrabsteer(0, 30, .3);
+            sleep(2500);
+            encoderDrive(.3, 5.5, -5.5, 10); //Turn parallel to wall.
             sleep(250);
 
-            encoderDrive(.3, 60, 60, 20);
-            sleep(250);
+            encoderDrive(.3, 40, 40, 20);
+            sleep(2500);
 
             //TODO Place marker
 
             encoderDrive(.3, -72, -72, 20);
-            sleep(250);
+            sleep(2500);
 
         }
     }
@@ -340,12 +389,10 @@ public class AutonomousMode {
     public boolean goldMineralIsPresent() throws InterruptedException {
         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         if (updatedRecognitions != null) {
-            autonomousClass.telemetry.addData("# Object Detected", updatedRecognitions.size());
-            if (updatedRecognitions.size() == 3) {
-                for (Recognition recognition : updatedRecognitions) {
-                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        return true;
-                    }
+            autonomousClass.telemetry.addData("This part is executing", "yes");
+            for (Recognition recognition : updatedRecognitions) {
+                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                    return true;
                 }
             }
         }

@@ -71,6 +71,7 @@ public class HardwareMecanum
     // Servos
     public Servo door = null;
     public CRServo brush = null;
+    public Servo flipperServo = null;
 
     //Sensors
     public BNO055IMU imu = null;
@@ -104,6 +105,8 @@ public class HardwareMecanum
 
         //brush = hwMap.get(CRServo.class, "brush");
         //door = hwMap.get(Servo.class, "door");
+
+        flipperServo = hwMap.get(Servo.class, "flipperServo");
 
         imu = hwMap.get(BNO055IMU.class, "imu");
         upperArmLimitSwitch = hwMap.get(TouchSensor.class, "upperArmLimitSwitch");
