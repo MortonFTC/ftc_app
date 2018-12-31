@@ -246,7 +246,11 @@ public class Teleop2018 extends OpMode {
         if (g_right_y != 0 && Math.abs(g_right_y) >= .3) { //Deadzone for joystick
             if (-g_right_y > .3) { //If joystick is up.
                 robot.armUpper.setPower(-ARM_POWER);
+                telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
+                telemetry.update();
             } else if (-g_right_y < -.3 && !robot.upperArmLimitSwitch.isPressed()) { //If joystick is down.
+                telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
+                telemetry.update();
                 robot.armUpper.setPower(ARM_POWER);
             }
         }
