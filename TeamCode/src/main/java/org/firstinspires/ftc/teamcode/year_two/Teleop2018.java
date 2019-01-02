@@ -55,7 +55,7 @@ public class Teleop2018 extends OpMode {
 
     public final double SERVO_RATE_OF_CHANGE = 1/280.0;
     public final int ARM_RATE_OF_CHANGE = 28*20;
-    public final double ARM_POWER = .2;
+    public final double ARM_POWER = .35;
     public final double BRUSH_SPEED = 1; //TODO
     public final double DOOR_START_POS = 0.45D;
     public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
@@ -259,7 +259,7 @@ public class Teleop2018 extends OpMode {
         }
 
         //Activating the brushes.
-        /*if (g_trigger_right > 0)
+        if (g_trigger_right > 0)
             robot.brush.setPower(BRUSH_SPEED);
         else if (g_trigger_left > 0) //Reverse
             robot.brush.setPower(-BRUSH_SPEED);
@@ -271,7 +271,6 @@ public class Teleop2018 extends OpMode {
         else {
             robot.door.setPosition(DOOR_START_POS);
         }
-        */
     }
 
     public enum PresetLocation {

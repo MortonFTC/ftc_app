@@ -37,6 +37,8 @@ public class AutonomousMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
+    public boolean positionDecided;
+
 
     public AutonomousMode(LinearOpMode autonomousClass, int position) {
         robot = new HardwareMecanum();
@@ -62,7 +64,6 @@ public class AutonomousMode {
         robot.flipperServo.setPosition(0);
 
         int goldMineralPosition = 0;
-        boolean positionDecided = false;
 
 
         if (position == 0) {
@@ -96,7 +97,7 @@ public class AutonomousMode {
             encoderDrive(.15, 13, 13, 10);
             sleep(250);
 
-            encoderCrabsteer(1, 25, .3);
+            encoderCrabsteer(1, 20, .3);
             sleep(5000);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 1;
@@ -175,7 +176,7 @@ public class AutonomousMode {
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
 
             robot.armLower.setPower(.3);
-            Thread.sleep(7000);
+            Thread.sleep(4500);
 
             autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
             autonomousClass.telemetry.update();
@@ -184,79 +185,71 @@ public class AutonomousMode {
 
             //TODO Reset lower arm encoders
 
-            if (goldMineralIsPresent())
-            {
-                autonomousClass.telemetry.addData("Gold Mineral Detected", "yeah");
-            }
-            else
-            {
-                autonomousClass.telemetry.addData("Gold Mineral Detected", "nope");
-            }
-
 
             encoderDrive(.15, 13, 13, 10);
             sleep(250);
 
-            encoderCrabsteer(1, 25, .3);
-            sleep(5000);
+            encoderCrabsteer(1, 20, .3);
+            sleep(1500);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 1;
-                positionDecided = true;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
-
-                robot.flipperServo.setPosition(.4);
-
-                sleep(500);
-
-                encoderDrive(.15, 11, 11, 10);
-
-                sleep(2500);
-
-                robot.flipperServo.setPosition(.5);
-
-                sleep(500);
-
-                encoderDrive(.15, -11, -11, 10);
-
-                sleep(2500);
+                pushMineral(1);
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(5000);
+            sleep(1500);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 2;
-                positionDecided = true;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
+
+                pushMineral(2);
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(5000);
+            sleep(1500);
             if (goldMineralIsPresent()) {
                 goldMineralPosition = 3;
-                positionDecided = true;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
+
+                pushMineral(3);
             }
 
             if (positionDecided == false) {
 
             }
 
-            encoderCrabsteer(0, 37, .3);
+            encoderCrabsteer(0, 30, .3);
             sleep(2500);
             encoderDrive(.3, 5.5, -5.5, 10); //Turn parallel to wall.
             sleep(250);
 
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6300);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
+
+            robot.armLower.setPower(.2);
+            robot.armUpper.setPower(1);
+
             encoderDrive(.3, 40, 40, 20);
-            sleep(2500);
+            sleep(6000);
+
+            robot.door.setPosition(.45D + 90/280.0);
+            sleep(1500);
+            robot.door.setPosition(.45D);
 
             //TODO Place marker
 
-            encoderDrive(.3, -72, -72, 20);
+            encoderDrive(.3, -80, -80, 20);
             sleep(2500);
-
         }
     }
 
@@ -531,6 +524,24 @@ public class AutonomousMode {
         autonomousClass.telemetry.addData("Still running", 4);
         autonomousClass.telemetry.update();
         //crabSteer(1, 500, .5);
+    }
+
+    public void pushMineral(int position) throws InterruptedException {
+        positionDecided = true;
+
+        encoderDrive(.15, 11, 11, 10);
+
+        sleep(2500);
+
+        robot.flipperServo.setPosition(.5);
+
+        sleep(500);
+
+        encoderDrive(.15, -11, -11, 10);
+
+        sleep(500);
+
+        robot.flipperServo.setPosition(0);
     }
 
      /*

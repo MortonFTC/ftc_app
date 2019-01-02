@@ -103,8 +103,8 @@ public class HardwareMecanum
         armLower = hwMap.get(DcMotor.class, "armLower");
         armUpper = hwMap.get(DcMotor.class, "armUpper");
 
-        //brush = hwMap.get(CRServo.class, "brush");
-        //door = hwMap.get(Servo.class, "door");
+        brush = hwMap.get(CRServo.class, "brush");
+        door = hwMap.get(Servo.class, "door");
 
         flipperServo = hwMap.get(Servo.class, "flipperServo");
 
