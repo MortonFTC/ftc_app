@@ -55,7 +55,8 @@ public class Teleop2018 extends OpMode {
 
     public final double SERVO_RATE_OF_CHANGE = 1/280.0;
     public final int ARM_RATE_OF_CHANGE = 28*20;
-    public final double ARM_POWER = .35;
+    public final double ARM_LOWER_POWER = .35;
+    public final double ARM_UPPER_POWER = .7;
     public final double BRUSH_SPEED = 1; //TODO
     public final double DOOR_START_POS = 0.45D;
     public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
@@ -221,7 +222,7 @@ public class Teleop2018 extends OpMode {
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_RATE_OF_CHANGE);
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - ARM_RATE_OF_CHANGE);
                 //armLowerOffset -= ARM_RATE_OF_CHANGE;
-                robot.armLower.setPower(-ARM_POWER);
+                robot.armLower.setPower(-ARM_LOWER_POWER);
                 telemetry.addData("EncoderPosition", robot.armLower.getCurrentPosition());
                 telemetry.update();
             }
@@ -229,7 +230,7 @@ public class Teleop2018 extends OpMode {
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + ARM_RATE_OF_CHANGE);
                 //armLowerOffset += ARM_RATE_OF_CHANGE;
-                robot.armLower.setPower(ARM_POWER);
+                robot.armLower.setPower(ARM_LOWER_POWER);
                 telemetry.addData("EncoderPosition", robot.armLower.getCurrentPosition());
                 telemetry.update();
             }
@@ -245,13 +246,13 @@ public class Teleop2018 extends OpMode {
 
         if (g_right_y != 0 && Math.abs(g_right_y) >= .3) { //Deadzone for joystick
             if (-g_right_y > .3) { //If joystick is up.
-                robot.armUpper.setPower(-ARM_POWER);
+                robot.armUpper.setPower(-ARM_UPPER_POWER);
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
                 telemetry.update();
             } else if (-g_right_y < -.3 && !robot.upperArmLimitSwitch.isPressed()) { //If joystick is down.
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
                 telemetry.update();
-                robot.armUpper.setPower(ARM_POWER);
+                robot.armUpper.setPower(ARM_UPPER_POWER);
             }
         }
         else {

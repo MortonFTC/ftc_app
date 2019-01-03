@@ -173,21 +173,33 @@ public class AutonomousMode {
             autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
             autonomousClass.telemetry.update();
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 5300);
 
-            robot.armLower.setPower(.3);
-            Thread.sleep(4500);
+            robot.armLower.setPower(.5);
+            Thread.sleep(5500);
 
             autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
             autonomousClass.telemetry.update();
 
-            encoderCrabsteer(0, 5, .5);
+            encoderCrabsteer(0, 3.5, .5);
 
             //TODO Reset lower arm encoders
 
 
-            encoderDrive(.15, 13, 13, 10);
-            sleep(250);
+            encoderDrive(.4, 15, 15, 10);
+            sleep(500);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
+
+            robot.armLower.setPower(.2);
+            robot.armUpper.setPower(1);
 
             encoderCrabsteer(1, 20, .3);
             sleep(1500);
@@ -222,25 +234,13 @@ public class AutonomousMode {
 
             }
 
-            encoderCrabsteer(0, 30, .3);
+            encoderCrabsteer(0, 33.5, .3);
             sleep(2500);
             encoderDrive(.3, 5.5, -5.5, 10); //Turn parallel to wall.
             sleep(250);
 
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6300);
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
-
-            robot.armLower.setPower(.2);
-            robot.armUpper.setPower(1);
-
-            encoderDrive(.3, 40, 40, 20);
-            sleep(6000);
+            encoderDrive(.6, 44, 44, 20);
+            sleep(3000);
 
             robot.door.setPosition(.45D + 90/280.0);
             sleep(1500);
@@ -248,7 +248,7 @@ public class AutonomousMode {
 
             //TODO Place marker
 
-            encoderDrive(.3, -80, -80, 20);
+            encoderDrive(.6, -80, -80, 20);
             sleep(2500);
         }
     }
@@ -530,10 +530,6 @@ public class AutonomousMode {
         positionDecided = true;
 
         encoderDrive(.15, 11, 11, 10);
-
-        sleep(2500);
-
-        robot.flipperServo.setPosition(.5);
 
         sleep(500);
 
