@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
+import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
 public class AutonomousMode {
@@ -66,11 +67,98 @@ public class AutonomousMode {
         int goldMineralPosition = 0;
 
 
-        if (position == 2) {
+        if (position == 2) { //Test pos
             encoderDrive(.3, 15, 15, 10);
             sleep(500);
 
-            encoderDrive(.3, -17, 17, 10);
+            encoderDrive(.3, -19, 19, 10);
+            sleep(1000);
+
+            encoderDrive(.3, -17, -17, 10);
+            sleep(2000);
+
+            encoderDrive(.05, 37,37,10);
+
+            long startTime = System.currentTimeMillis();
+            boolean goldDetected = false;
+            long armOutTime = 0;
+            boolean armRetracted = false; //TODO
+            boolean armOut = false;
+
+            while (System.currentTimeMillis() < startTime + 10000)
+            {
+                if (goldDetected == false) {
+                    if (goldMineralIsPresent()) {
+                        goldDetected = true;
+                        armOutTime = System.currentTimeMillis();
+                        armOut = true;
+                    }
+
+                    if (goldDetected == true && armOutTime != 0 && armRetracted == false) {
+                        if (System.currentTimeMillis() > armOutTime + 2000) {
+                            armOut = false;
+                        }
+                    }
+                }
+                autonomousClass.telemetry.addData("arm out?", armOut);
+                autonomousClass.telemetry.update();
+            }
+
+            /*
+            if (goldMineralIsPresent()) {
+                //extend flipper servo
+                goldMineralPosition = 2;
+
+                encoderDrive(.3, 5, 5, 10);
+                sleep(1000);
+                //retract flipper servo
+                autonomousClass.telemetry.addData("Flipper extending.", "byebye");
+                autonomousClass.telemetry.update();
+                encoderDrive(.3, 15, 15, 10);
+                sleep(1000);
+            }
+            else {
+                encoderDrive(.3, -15, -15, 10);
+                sleep(1000);
+
+                if (goldMineralIsPresent()) {
+                    goldMineralPosition = 3;
+                    //extend flipper servo
+                    autonomousClass.telemetry.addData("Flipper extending.", "yeah");
+                    autonomousClass.telemetry.update();
+                    encoderDrive(.3, 5, 5, 10);
+                    sleep(1000);
+                    //retract flipper servo
+                    autonomousClass.telemetry.addData("Flipper extending.", "byebye");
+                    autonomousClass.telemetry.update();
+                    encoderDrive(.3, 30, 30, 10);
+                    sleep(3000);
+                }
+                else {
+                    goldMineralPosition = 1;
+                    encoderDrive(.3, 25, 25,  10);
+                    sleep(2000);
+                    //extend flipper servo
+                    autonomousClass.telemetry.addData("Flipper extending.", "yeah");
+                    autonomousClass.telemetry.update();
+                    encoderDrive(.3, 10,10, 10);
+                    sleep(1000);
+                    //retract flipper servo
+                    autonomousClass.telemetry.addData("Flipper extending.", "byebye");
+                    autonomousClass.telemetry.update();
+                }
+            }
+
+            */
+
+            encoderDrive(.3, 25,25,10);
+            sleep(3000);
+
+            encoderDrive(.3, -8.5,8.5,10);
+            sleep(500);
+
+            encoderDrive(.3, 35,35, 10);
+            sleep(2000);
         }
 
         if (position == 0) {
@@ -268,6 +356,10 @@ public class AutonomousMode {
         }
     }
 
+    public void rampSpeedDrive() {
+
+    }
+
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
@@ -315,7 +407,7 @@ public class AutonomousMode {
                             robot.leftRearDrive.isBusy() && robot.rightRearDrive.isBusy())) {
 
                 // Display it for the driver.
-                autonomousClass.telemetry.addData("Path1", "Running to %7d :%7d :%7d :%7d",
+                /*autonomousClass.telemetry.addData("Path1", "Running to %7d :%7d :%7d :%7d",
                         newLeftFrontTarget, newRightFrontTarget, newLeftRearTarget, newRightRearTarget);
                 autonomousClass.telemetry.addData("Path2", "Running at %7d :%7d :%7d :%7d",
                         robot.leftFrontDrive.getCurrentPosition(),
@@ -323,7 +415,7 @@ public class AutonomousMode {
                         robot.leftRearDrive.getCurrentPosition(),
                         robot.rightRearDrive.getCurrentPosition());
                 autonomousClass.telemetry.update();
-            }
+            */}
 
             // Stop all motion;
             robot.leftFrontDrive.setPower(0);
