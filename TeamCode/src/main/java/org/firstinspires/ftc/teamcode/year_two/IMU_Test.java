@@ -153,19 +153,19 @@ public class IMU_Test extends OpMode {
                 });
 
         telemetry.addLine()
-                .addData("heading", new Func<String>() {
+                .addData("heading (Z)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.firstAngle);
+                        return formatAngle(angles.angleUnit, angles.firstAngle); //Z-Axis (based on get Orientation method parm above
                     }
                 })
-                .addData("roll", new Func<String>() {
+                .addData("roll (Y)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.secondAngle);
+                        return formatAngle(angles.angleUnit, angles.secondAngle); //Y-Axis (based on get Orientation method parm above
                     }
                 })
-                .addData("pitch", new Func<String>() {
+                .addData("pitch (X)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.thirdAngle);
+                        return formatAngle(angles.angleUnit, angles.thirdAngle); //X-Axis (based on get Orientation method parm above
                     }
                 });
 
