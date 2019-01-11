@@ -66,6 +66,13 @@ public class AutonomousMode {
         int goldMineralPosition = 0;
 
 
+        if (position == 2) {
+            encoderDrive(.3, 15, 15, 10);
+            sleep(500);
+
+            encoderDrive(.3, -17, 17, 10);
+        }
+
         if (position == 0) {
 
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);

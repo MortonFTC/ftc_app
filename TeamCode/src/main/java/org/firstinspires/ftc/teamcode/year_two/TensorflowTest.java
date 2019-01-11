@@ -115,9 +115,11 @@ public class TensorflowTest extends LinearOpMode {
                             int goldMineralX = -1;
                             int silverMineral1X = -1;
                             int silverMineral2X = -1;
+                            float confidence = 0;
                             for (Recognition recognition : updatedRecognitions) {
                                 if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
                                     goldMineralX = (int) recognition.getLeft();
+                                    confidence = recognition.getConfidence();
                                 } else if (silverMineral1X == -1) {
                                     silverMineral1X = (int) recognition.getLeft();
                                 } else {
@@ -133,6 +135,7 @@ public class TensorflowTest extends LinearOpMode {
                                     telemetry.addData("Gold Mineral Position", "Center");
                                 }
                             }
+                            telemetry.addData("Confidence", confidence);
                         }
                         telemetry.update();
                     }
