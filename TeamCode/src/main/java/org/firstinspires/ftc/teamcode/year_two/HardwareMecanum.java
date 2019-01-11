@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -64,34 +65,26 @@ public class HardwareMecanum
     public DcMotor  rightFrontDrive  = null;
     public DcMotor  leftRearDrive    = null;
     public DcMotor  rightRearDrive   = null;
-    public DcMotor armLowerRight = null;
+    public DcMotor armLower = null;
+    public DcMotor armUpper = null;
 
     // Servos
-    public Servo armMidLeftOut = null;
-    public Servo armMidLeftIn = null;
-    public Servo armMidRightOut = null;
-    public Servo armMidRightIn = null;
-    public Servo hookServo = null;
-  // public Servo armUpperLeft = null;
-
     public Servo door = null;
-
     public CRServo brush = null;
+    public Servo flipperServo = null;
 
+    //Sensors
     public BNO055IMU imu = null;
-
-    //Misc
+    public TouchSensor upperArmLimitSwitch = null;
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
 
-
-    /* constants
-    public static final double MID_SERVO       =  0.5;
-    public static final double ARM_UP_POWER    = -1.0;
-    public static final double ARM_DOWN_POWER  = 1.0;
-*/
-    static final double ARM_COUNTS_PER_MOTOR_REV    = 1300;    // eg: TETRIX Motor Encoder
-    static final double ARM_MOTOR_REVS_PER_SHAFT_REV = 28;
+    static final double ARM_LOWER_COUNTS_PER_MOTOR_REV = 1300;    // eg: TETRIX Motor Encoder
+    static final double ARM_LOWER_MOTOR_REVS_PER_SHAFT_REV = 28;
     static final double WHEELS_COUNTS_PER_SHAFT_REV = 1400;
+
+    final int WHEEL_DIAMETER_INCHES = 6;
+    final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_INCHES * Math.PI;
+    final double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -107,26 +100,17 @@ public class HardwareMecanum
         leftRearDrive  = hwMap.get(DcMotor.class, "leftRearDrive"); // counter-clockwise = forward
         rightRearDrive = hwMap.get(DcMotor.class, "rightRearDrive"); // clockwise = forward
 
-        armLowerRight = hwMap.get(DcMotor.class, "armLowerRight");
+        armLower = hwMap.get(DcMotor.class, "armLower");
+        armUpper = hwMap.get(DcMotor.class, "armUpper");
 
-        armMidLeftIn = hwMap.get(Servo.class, "armMidLeftIn");
-        armMidRightOut = hwMap.get(Servo.class, "armMidRightOut");
-        armMidRightIn = hwMap.get(Servo.class, "armMidRightIn");
-        armMidLeftOut = hwMap.get(Servo.class, "armMidLeftOut");
-
-        hookServo = hwMap.get(Servo.class, "hookServo");
-        //armUpperLeft = hwMap.get(Servo.class, "armUpperLeft");
-
-        //singleMastDrive = hwMap.get(Servo.class, "singleMastDrive");
-        //doubleMastDrive1 = hwMap.get(Servo.class, "doubleMastDrive1");
-        //doubleMastDrive2 = hwMap.get(Servo.class, "doubleMastDrive2");
-        //hook = hwMap.get(Servo.class, "hook");
         brush = hwMap.get(CRServo.class, "brush");
         door = hwMap.get(Servo.class, "door");
 
-        //colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
+        flipperServo = hwMap.get(Servo.class, "flipperServo");
 
         imu = hwMap.get(BNO055IMU.class, "imu");
+        upperArmLimitSwitch = hwMap.get(TouchSensor.class, "upperArmLimitSwitch");
+
 
         // Set all motors to zero power
         leftFrontDrive.setPower(0);

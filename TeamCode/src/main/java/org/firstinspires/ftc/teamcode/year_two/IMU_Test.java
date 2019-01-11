@@ -22,9 +22,9 @@ import java.util.Locale;
 
 import static java.lang.Thread.sleep;
 
-@Disabled
+//@Disabled
 @TeleOp(name = "IMU_Test", group = "mortonElements")
-public class IMU_Test extends OpMode {
+public class IMU_Test extends LinearOpMode {
 
 //@Disabled
 
@@ -39,6 +39,7 @@ public class IMU_Test extends OpMode {
 
     private final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
 
+    final double CLAW_SPEED = 0.005;                 // sets rate to move servo
     private double clawOffset = 0.0;
     private final double MID_SERVO_claw = 0.5; //Default servo position
 
@@ -57,12 +58,12 @@ public class IMU_Test extends OpMode {
      * Code to run ONCE when the driver hits INIT
      */
     @Override
-    public void init() {
+    public void runOpMode()  throws InterruptedException {
 
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
 
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
 
         armServo1 = hardwareMap.servo.get("armServo1");
         armServo2 = hardwareMap.servo.get("armServo2");
@@ -97,16 +98,20 @@ public class IMU_Test extends OpMode {
         // Set up our telemetry dashboard
         composeTelemetry();
         telemetry.update();
-    }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void loop() {
+        waitForStart();
 
-            motorLeft.setPower(-gamepad1.left_stick_y);
-            motorRight.setPower(-gamepad1.right_stick_y);
+        while(opModeIsActive()) {
+
+            //originally motoLeft direction was reversed above and then stick value negated below
+            //switch right motor reversed so values below don't have to be negated.
+             motorLeft.setPower(gamepad1.left_stick_y);
+             motorRight.setPower(gamepad1.right_stick_y);
+
+             if (gamepad1.a) {
+                composeTelemetry();
+                telemetry.update();
+            }
 
             //Moves the arms
             if (gamepad1.right_bumper)
@@ -118,9 +123,8 @@ public class IMU_Test extends OpMode {
                 clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
             else if (gamepad1.left_trigger > 0)
                 clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-        composeTelemetry();
-        telemetry.update();
         }
+    }
 
     //----------------------------------------------------------------------------------------------
     // Telemetry Configuration
