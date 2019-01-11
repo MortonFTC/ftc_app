@@ -84,7 +84,7 @@ public class Lamguana_V3 extends OpMode {
         telemetry.update();
 
         // make sure the gyro is calibrated before continuing
-        /*while (!imu.isGyroCalibrated())  {
+        while (!imu.isGyroCalibrated())  {
             try {
                 sleep(100);
             } catch (InterruptedException e) {
@@ -95,15 +95,15 @@ public class Lamguana_V3 extends OpMode {
 
         telemetry.addData(">", "Calibration Time: " + elapsed_time.toString());    //
         telemetry.update();
-        */
+
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
 
-        /*try {
+        try {
             sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }*/
+        }
 
         // Set up our telemetry dashboard
         composeTelemetry();
@@ -126,8 +126,8 @@ public class Lamguana_V3 extends OpMode {
         else if (gamepad1.left_trigger > 0)
             clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-        composeTelemetry();
-        telemetry.update();
+        //composeTelemetry();
+        //telemetry.update();
     }
 
     //@Override
