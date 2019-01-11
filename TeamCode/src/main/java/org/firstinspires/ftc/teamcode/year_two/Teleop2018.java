@@ -55,7 +55,7 @@ public class Teleop2018 extends OpMode {
 
     public final double SERVO_RATE_OF_CHANGE = 1/280.0;
     public final int ARM_RATE_OF_CHANGE = 28*20;
-    public final double ARM_LOWER_POWER = .35;
+    public final double ARM_LOWER_POWER = .45;
     public final double ARM_UPPER_POWER = .7;
     public final double BRUSH_SPEED = 1; //TODO
     public final double DOOR_START_POS = 0.45D;

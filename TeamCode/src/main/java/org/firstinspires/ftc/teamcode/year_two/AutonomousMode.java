@@ -78,10 +78,20 @@ public class AutonomousMode {
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
 
+            encoderCrabsteer(0, 3.5, .5);
+
+            sleep(2000);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5500);
+
+            robot.armLower.setPower(.5);
+            Thread.sleep(3500);
+
             autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
             autonomousClass.telemetry.update();
-
-            encoderCrabsteer(0, 3.5, .5);
 
             //TODO Reset lower arm encoders
 
@@ -200,8 +210,8 @@ public class AutonomousMode {
             robot.armUpper.setPower(1);
 
             encoderCrabsteer(1, 20, .3);
-            sleep(1500);
-            if (goldMineralIsPresent()) {
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
                 goldMineralPosition = 1;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
@@ -209,8 +219,8 @@ public class AutonomousMode {
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(1500);
-            if (goldMineralIsPresent()) {
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
                 goldMineralPosition = 2;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
@@ -219,8 +229,8 @@ public class AutonomousMode {
             }
 
             encoderCrabsteer(0, 20, .3);
-            sleep(1500);
-            if (goldMineralIsPresent()) {
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
                 goldMineralPosition = 3;
                 autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
                 autonomousClass.telemetry.update();
@@ -232,13 +242,13 @@ public class AutonomousMode {
 
             }
 
-            encoderCrabsteer(0, 33.5, .3);
+            encoderCrabsteer(0, 34, .3);
             sleep(2500);
             encoderDrive(.3, 8.5, -8.5, 10); //Turn parallel to wall.
             sleep(250);
 
-            encoderDrive(.6, 46, 46, 20);
-            sleep(3000);
+            encoderDrive(.6, 48.5, 48.5, 20);
+            sleep(2000);
 
             robot.door.setPosition(.45D + 90/280.0);
             sleep(1500);
@@ -482,10 +492,18 @@ public class AutonomousMode {
         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         if (updatedRecognitions != null) {
             autonomousClass.telemetry.addData("This part is executing", "yes");
+            boolean goldPresent = false;
+            boolean silverPresent = false;
             for (Recognition recognition : updatedRecognitions) {
                 if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                    return true;
+                    goldPresent = true;
                 }
+                else if (recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
+                    silverPresent = true;
+                }
+            }
+            if (goldPresent && !silverPresent) {
+                return true;
             }
         }
         return false;
