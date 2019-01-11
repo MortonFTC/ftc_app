@@ -8,11 +8,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-@Disabled
+//@Disabled
 @TeleOp(name = "Lamgunana_V3", group = "mortonElements")
 public class Lamguana_V3 extends OpMode {
 
-    //TODO Work in progress.
+    //TODO Work in progress..
     private DcMotor motorLeft;
     private DcMotor motorRight;
 
