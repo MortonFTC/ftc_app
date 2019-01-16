@@ -38,6 +38,9 @@ public class AutonomousMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
+    public final double DOOR_START_POS = 0.45D;
+    public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
+
     public boolean positionDecided;
 
 
@@ -62,28 +65,39 @@ public class AutonomousMode {
 
         autonomousClass.waitForStart();
 
-        robot.flipperServo.setPosition(0);
+        robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
 
         int goldMineralPosition = 0;
 
 
         if (position == 2) { //Test pos
-            encoderDrive(.3, 15, 15, 10);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
+            autonomousClass.telemetry.update();
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
+
+            robot.armLower.setPower(.5);
+            Thread.sleep(3500);
+
+            encoderDrive(.3, 13, 13, 10);
             sleep(500);
 
-            encoderDrive(.3, -19, 19, 10);
+            encoderDrive(.3, -17, 17, 10);
             sleep(1000);
 
-            encoderDrive(.3, -17, -17, 10);
-            sleep(2000);
-
-            encoderDrive(.05, 37,37,10);
-
+            /*
             long startTime = System.currentTimeMillis();
             boolean goldDetected = false;
             long armOutTime = 0;
             boolean armRetracted = false; //TODO
             boolean armOut = false;
+
+            encoderDrive(.3, -17, -17, 10);
+            sleep(2000);
+
+            encoderDrive(.05, 37,37,10);
 
             while (System.currentTimeMillis() < startTime + 10000)
             {
@@ -103,15 +117,21 @@ public class AutonomousMode {
                 autonomousClass.telemetry.addData("arm out?", armOut);
                 autonomousClass.telemetry.update();
             }
+            */
 
-            /*
+
             if (goldMineralIsPresent()) {
                 //extend flipper servo
                 goldMineralPosition = 2;
 
+                robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                sleep(250);
+
                 encoderDrive(.3, 5, 5, 10);
                 sleep(1000);
                 //retract flipper servo
+                robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                sleep(250);
                 autonomousClass.telemetry.addData("Flipper extending.", "byebye");
                 autonomousClass.telemetry.update();
                 encoderDrive(.3, 15, 15, 10);
@@ -124,12 +144,16 @@ public class AutonomousMode {
                 if (goldMineralIsPresent()) {
                     goldMineralPosition = 3;
                     //extend flipper servo
-                    autonomousClass.telemetry.addData("Flipper extending.", "yeah");
+                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                    sleep(250);
+                    autonomousClass.telemetry.addData("Flipper extending.", "Yeah genius, it's working.");
                     autonomousClass.telemetry.update();
                     encoderDrive(.3, 5, 5, 10);
                     sleep(1000);
                     //retract flipper servo
-                    autonomousClass.telemetry.addData("Flipper extending.", "byebye");
+                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                    sleep(250);
+                    autonomousClass.telemetry.addData("Flipper extending.", "bye felicia");
                     autonomousClass.telemetry.update();
                     encoderDrive(.3, 30, 30, 10);
                     sleep(3000);
@@ -139,17 +163,19 @@ public class AutonomousMode {
                     encoderDrive(.3, 25, 25,  10);
                     sleep(2000);
                     //extend flipper servo
-                    autonomousClass.telemetry.addData("Flipper extending.", "yeah");
+                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                    sleep(250);
+                    autonomousClass.telemetry.addData("Flipper extending.", "yup... pretty cool.");
                     autonomousClass.telemetry.update();
                     encoderDrive(.3, 10,10, 10);
                     sleep(1000);
                     //retract flipper servo
-                    autonomousClass.telemetry.addData("Flipper extending.", "byebye");
+                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                    sleep(250);
+                    autonomousClass.telemetry.addData("Flipper extending.", "were over");
                     autonomousClass.telemetry.update();
                 }
             }
-
-            */
 
             encoderDrive(.3, 25,25,10);
             sleep(3000);
@@ -157,8 +183,35 @@ public class AutonomousMode {
             encoderDrive(.3, -8.5,8.5,10);
             sleep(500);
 
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 9000);
+
+            robot.armLower.setPower(.2);
+            robot.armUpper.setPower(.7);
+
+
             encoderDrive(.3, 35,35, 10);
             sleep(2000);
+
+            robot.door.setPosition(DOOR_OPEN_POS);
+            sleep(700);
+
+            encoderDrive(.3, -60,-60, 10);
+        }
+
+        if (position == 3) {
+            encoderDrive(.3, 15, 15, 10);
+            sleep(500);
+
+            encoderDrive(.3, -19, 19, 10);
+            sleep(1000);
+
         }
 
         if (position == 0) {
@@ -176,14 +229,6 @@ public class AutonomousMode {
             encoderCrabsteer(0, 3.5, .5);
 
             sleep(2000);
-
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5500);
-
-            robot.armLower.setPower(.5);
-            Thread.sleep(3500);
 
             autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
             autonomousClass.telemetry.update();

@@ -86,6 +86,9 @@ public class HardwareMecanum
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_INCHES * Math.PI;
     final double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
 
+    final double FLIPPER_UP_POSITION = .5;
+    final double FLIPPER_DOWN_POSITION = .75;
+
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private ElapsedTime period  = new ElapsedTime();
@@ -109,7 +112,7 @@ public class HardwareMecanum
         flipperServo = hwMap.get(Servo.class, "flipperServo");
 
         imu = hwMap.get(BNO055IMU.class, "imu");
-        upperArmLimitSwitch = hwMap.get(TouchSensor.class, "upperArmLimitSwitch");
+        //upperArmLimitSwitch = hwMap.get(TouchSensor.class, "upperArmLimitSwitch");
 
 
         // Set all motors to zero power
