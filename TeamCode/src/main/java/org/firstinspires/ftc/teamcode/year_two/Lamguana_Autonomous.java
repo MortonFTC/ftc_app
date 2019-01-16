@@ -94,8 +94,8 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
     // These constants define the desired driving/control characteristics
     // The can/should be tweaked to suite the specific robot drive train.
-    static final double     DRIVE_SPEED             = 0.1;     // Nominal speed for better accuracy.
-    static final double     TURN_SPEED              = 0.1;     // Nominal half speed for better accuracy.
+    static final double     DRIVE_SPEED             = 0.05;     // Nominal speed for better accuracy.
+    static final double     TURN_SPEED              = 0.05;     // Nominal half speed for better accuracy.
 
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
@@ -191,18 +191,38 @@ public class Lamguana_Autonomous extends LinearOpMode {
         // Put a hold after each turn
         telemetry.addData("Drive 1 ", angles.firstAngle);
         telemetry.update();
-        gyroDrive(DRIVE_SPEED, 48.0, 0.0);    // Drive FWD 48 inches
+        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
         telemetry.addData("Turn 1 ", angles.firstAngle);
         telemetry.update();
-        gyroTurn( TURN_SPEED, -45.0);         // Turn  CCW to -45 Degrees
-        gyroHold( TURN_SPEED, -45.0, 0.5);    // Hold -45 Deg heading for a 1/2 second
+        gyroTurn( TURN_SPEED, -90.0);         // Turn  CCW to -45 Degrees
+        //gyroHold( TURN_SPEED, -90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
+        telemetry.addData("Drive 2 ", angles.firstAngle);
+        telemetry.update();
+        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
+        telemetry.addData("Turn 2 ", angles.firstAngle);
+        telemetry.update();
+        gyroTurn( TURN_SPEED, 180.0);         // Turn  CCW to -45 Degrees
+        //gyroHold( TURN_SPEED, -180.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
+        telemetry.addData("Drive 3 ", angles.firstAngle);
+        telemetry.update();
+        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
+        telemetry.addData("Turn 3 ", angles.firstAngle);
+        telemetry.update();
+        gyroTurn( TURN_SPEED, 90.0);         // Turn  CCW to -45 Degrees
+        //gyroHold( TURN_SPEED, 90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
+        telemetry.addData("Drive 4 ", angles.firstAngle);
+        telemetry.update();
+        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
+/*
+        gyroTurn( TURN_SPEED, -90.0);         // Turn  CCW to -45 Degrees
+        gyroHold( TURN_SPEED, -90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
         gyroDrive(DRIVE_SPEED, 12.0, -45.0);  // Drive FWD 12 inches at 45 degrees
         gyroTurn( TURN_SPEED,  45.0);         // Turn  CW  to  45 Degrees
         gyroHold( TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
         gyroTurn( TURN_SPEED,   0.0);         // Turn  CW  to   0 Degrees
         gyroHold( TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for a 1 second
         gyroDrive(DRIVE_SPEED,-48.0, 0.0);    // Drive REV 48 inches
-
+*/
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
@@ -279,13 +299,13 @@ public class Lamguana_Autonomous extends LinearOpMode {
                 motorLeft.setPower(leftSpeed);
                 motorRight.setPower(rightSpeed);
 
-                // Display drive status for the driver.
+                /*// Display drive status for the driver.
                 telemetry.addData("Err/St",  "%5.1f/%5.1f",  error, steer);
                 telemetry.addData("Target",  "%7d:%7d",      newLeftTarget,  newRightTarget);
                 telemetry.addData("Actual",  "%7d:%7d",      motorLeft.getCurrentPosition(),
                         motorRight.getCurrentPosition());
                 telemetry.addData("Speed",   "%5.2f:%5.2f",  leftSpeed, rightSpeed);
-                telemetry.update();
+                telemetry.update();*/
             }
 
             // Stop all motion;
@@ -337,7 +357,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
         while (opModeIsActive() && (holdTimer.time() < holdTime)) {
             // Update telemetry & Allow time for other processes to run.
             onHeading(speed, angle, P_TURN_COEFF);
-            telemetry.update();
+            //telemetry.update();
         }
 
         // Stop all motion;
