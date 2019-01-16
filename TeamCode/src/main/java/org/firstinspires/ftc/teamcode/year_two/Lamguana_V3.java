@@ -126,8 +126,10 @@ public class Lamguana_V3 extends OpMode {
         else if (gamepad1.left_trigger > 0)
             clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-        //composeTelemetry();
-        //telemetry.update();
+        if (gamepad1.a) {
+            composeTelemetry();
+            telemetry.update();
+        }
     }
 
     //@Override
@@ -166,17 +168,17 @@ public class Lamguana_V3 extends OpMode {
                 });
 
         telemetry.addLine()
-                .addData("heading", new Func<String>() {
+                .addData("heading (Z)", new Func<String>() {
                     @Override public String value() {
                         return formatAngle(angles.angleUnit, angles.firstAngle);
                     }
                 })
-                .addData("roll", new Func<String>() {
+                .addData("roll (Y)", new Func<String>() {
                     @Override public String value() {
                         return formatAngle(angles.angleUnit, angles.secondAngle);
                     }
                 })
-                .addData("pitch", new Func<String>() {
+                .addData("pitch (X)", new Func<String>() {
                     @Override public String value() {
                         return formatAngle(angles.angleUnit, angles.thirdAngle);
                     }
