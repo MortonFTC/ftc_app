@@ -73,19 +73,60 @@ public class AutonomousMode {
         if (position == 2) { //Test pos
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
 
-            encoderDrive(.3, 13, 13, 10);
+            encoderCrabsteer(0, 3.5, .5);
             sleep(500);
 
-            encoderDrive(.3, -17, 17, 10);
+            encoderDrive(.3, 14, 14, 10);
+            sleep(500);
+
+            encoderDrive(.3, -18, 18, 10);
             sleep(1000);
+
+            encoderDrive(.3, -25, -25, 10);
+            sleep(1000);
+
+            int targetPos = encoderDrive(.08, 40, 40, 10);
+
+            boolean goldSpotted = false;
+            int goldSpottedCount = 0;
+
+            while (goldMineralIsPresent())
+            {
+                robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                sleep(500);
+                robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                break;
+            }
+
+            /*
+            while (robot.rightFrontDrive.getCurrentPosition() > targetPos)
+            {
+                autonomousClass.telemetry.addData("This was updated.", "Yes.");
+                if (goldMineralIsPresent() && !goldSpotted)
+                {
+                    goldSpotted = true;
+                    goldSpottedCount = robot.rightFrontDrive.getCurrentPosition();
+                }
+
+                if (goldSpotted)
+                {
+                    if (robot.rightFrontDrive.getCurrentPosition() > goldSpottedCount + 2000)
+                    {
+                        robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                    }
+                    else
+                    {
+                        robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                    }
+                }
+            }
+
+            */
 
             /*
             long startTime = System.currentTimeMillis();
@@ -119,6 +160,9 @@ public class AutonomousMode {
             }
             */
 
+            /*
+            encoderDrive(.3, -5, -5, 10);
+            sleep(500);
 
             if (goldMineralIsPresent()) {
                 //extend flipper servo
@@ -176,9 +220,10 @@ public class AutonomousMode {
                     autonomousClass.telemetry.update();
                 }
             }
+            */
 
             encoderDrive(.3, 25,25,10);
-            sleep(3000);
+            sleep(1500);
 
             encoderDrive(.3, -8.5,8.5,10);
             sleep(500);
@@ -190,9 +235,9 @@ public class AutonomousMode {
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 9000);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7700);
 
-            robot.armLower.setPower(.2);
+            robot.armLower.setPower(.5);
             robot.armUpper.setPower(.7);
 
 
@@ -405,7 +450,7 @@ public class AutonomousMode {
 
     }
 
-    public void encoderDrive(double speed,
+    public int encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
         int newLeftFrontTarget;
@@ -452,7 +497,7 @@ public class AutonomousMode {
                             robot.leftRearDrive.isBusy() && robot.rightRearDrive.isBusy())) {
 
                 // Display it for the driver.
-                /*autonomousClass.telemetry.addData("Path1", "Running to %7d :%7d :%7d :%7d",
+                autonomousClass.telemetry.addData("Path1", "Running to %7d :%7d :%7d :%7d",
                         newLeftFrontTarget, newRightFrontTarget, newLeftRearTarget, newRightRearTarget);
                 autonomousClass.telemetry.addData("Path2", "Running at %7d :%7d :%7d :%7d",
                         robot.leftFrontDrive.getCurrentPosition(),
@@ -460,7 +505,7 @@ public class AutonomousMode {
                         robot.leftRearDrive.getCurrentPosition(),
                         robot.rightRearDrive.getCurrentPosition());
                 autonomousClass.telemetry.update();
-            */}
+            }
 
             // Stop all motion;
             robot.leftFrontDrive.setPower(0);
@@ -474,8 +519,10 @@ public class AutonomousMode {
             robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+            return newRightFrontTarget;
             //  sleep(250);   // optional pause after each move
         }
+        return 0;
     }
 
     public void encoderCrabsteer(int direction, double inches, double power) throws InterruptedException //left = 0, right = 1

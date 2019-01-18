@@ -217,8 +217,8 @@ public class Teleop2018 extends OpMode {
 
         }*/
 
-        if (g_left_y != 0 && Math.abs(g_left_y) >= .3) { //Deadzone for joystick
-            if (-g_left_y > .2) {
+        if (g_left_y != 0 && Math.abs(g_left_y) >= .15) { //Deadzone for joystick
+            if (-g_left_y > .15) {
                 //If joystick is up.
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_RATE_OF_CHANGE);
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - ARM_RATE_OF_CHANGE);
@@ -227,7 +227,7 @@ public class Teleop2018 extends OpMode {
                 telemetry.addData("EncoderPosition", robot.armLower.getCurrentPosition());
                 telemetry.update();
             }
-            else if (-g_left_y < -.2) { //If joystick is down.
+            else if (-g_left_y < -.15) { //If joystick is down.
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + ARM_RATE_OF_CHANGE);
                 //armLowerOffset += ARM_RATE_OF_CHANGE;
@@ -245,12 +245,12 @@ public class Teleop2018 extends OpMode {
             robot.armLower.setPower(0); //TODO Uncomment
         }
 
-        if (g_right_y != 0 && Math.abs(g_right_y) >= .3) { //Deadzone for joystick
-            if (-g_right_y > .2) { //If joystick is up.
+        if (g_right_y != 0 && Math.abs(g_right_y) >= .15) { //Deadzone for joystick
+            if (-g_right_y > .15) { //If joystick is up.
                 robot.armUpper.setPower(g_right_y * .7);
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
                 telemetry.update();
-            } else if (-g_right_y < -.2) { //If joystick is down.
+            } else if (-g_right_y < -.15) { //If joystick is down.
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
                 telemetry.update();
                 robot.armUpper.setPower(g_right_y * .7);
