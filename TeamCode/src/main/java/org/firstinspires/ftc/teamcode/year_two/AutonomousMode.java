@@ -82,15 +82,21 @@ public class AutonomousMode {
             sleep(500);
 
             encoderDrive(.3, -18, 18, 10, false);
-            sleep(1000);
+            sleep(500);
 
-            encoderDrive(.3, -28, -28, 10, false);
-            sleep(1000);
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7700);
+            robot.armUpper.setPower(.7);
+
+            encoderDrive(.3, -24, -24, 10, false);
+            sleep(500);
 
             autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
             autonomousClass.telemetry.update();
 
-            int targetPos = encoderDrive(.08, 43, 43, 10, true);
+            int targetPos = encoderDrive(.5, 65, 65, 10, true);
 
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
@@ -225,32 +231,28 @@ public class AutonomousMode {
             }
             */
 
-            encoderDrive(.3, 25,25,10, false);
-            sleep(1500);
+            //encoderDrive(.3, 25,25,10, false);
+            //sleep(1500);
 
-            encoderDrive(.3, -8.5,8.5,10, false);
+            encoderDrive(.3, -9.0,9.0,10, false);
             sleep(500);
 
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7700);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setPower(.7);
 
-            robot.armLower.setPower(.5);
-            robot.armUpper.setPower(.7);
-
-
-            encoderDrive(.3, 35,35, 10, false);
-            sleep(2000);
+            encoderDrive(.5, 35,35, 10, false);
+            sleep(1250);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
 
-            encoderDrive(.3, -60,-60, 10, false);
+            encoderDrive(.3, -2.5, 2.5, 10, false);
+            sleep(250);
+
+            encoderDrive(.5, -73,-73, 10, false);
         }
 
         if (position == 3) {
@@ -485,10 +487,18 @@ public class AutonomousMode {
             robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
-            robot.leftFrontDrive.setPower(speed);
-            robot.rightFrontDrive.setPower(speed);
-            robot.leftRearDrive.setPower(speed);
-            robot.rightRearDrive.setPower(speed);
+            if (checkMinerals) {
+                robot.leftFrontDrive.setPower(0.08);
+                robot.rightFrontDrive.setPower(0.08);
+                robot.leftRearDrive.setPower(0.08);
+                robot.rightRearDrive.setPower(0.08);
+            }
+            else {
+                robot.leftFrontDrive.setPower(speed);
+                robot.rightFrontDrive.setPower(speed);
+                robot.leftRearDrive.setPower(speed);
+                robot.rightRearDrive.setPower(speed);
+            }
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when ANY motor hits
@@ -513,9 +523,13 @@ public class AutonomousMode {
                 if (checkMinerals && goldMineralIsPresent())
                 {
                     robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    sleep(500);
+                    sleep(2250);
                     robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
                     //break;
+                    robot.leftFrontDrive.setPower(speed);
+                    robot.rightFrontDrive.setPower(speed);
+                    robot.leftRearDrive.setPower(speed);
+                    robot.rightRearDrive.setPower(speed);
                 }
 
             }
