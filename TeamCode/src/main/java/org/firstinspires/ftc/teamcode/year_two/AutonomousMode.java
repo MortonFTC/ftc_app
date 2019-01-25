@@ -81,13 +81,13 @@ public class AutonomousMode {
             encoderDrive(.3, 14, 14, 10, false);
             sleep(500);
 
-            encoderDrive(.3, -18, 18, 10, false);
+            encoderDrive(.3, -19, 19, 10, false);
             sleep(500);
 
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7700);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
             robot.armUpper.setPower(.7);
 
             encoderDrive(.3, -24, -24, 10, false);
@@ -243,7 +243,7 @@ public class AutonomousMode {
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
             robot.armLower.setPower(1);
 
-            encoderDrive(.7, 35,35, 10, false);
+            encoderDrive(.7, 42,42, 10, false);
             sleep(750);
 
             robot.door.setPosition(DOOR_OPEN_POS);
@@ -257,10 +257,66 @@ public class AutonomousMode {
             robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            encoderDrive(.5, -73,-73, 10, false);
+            encoderDrive(.5, -80,-80, 10, false);
         }
 
         if (position == 3) {
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
+
+            robot.armLower.setPower(.5);
+            Thread.sleep(3500);
+
+            encoderCrabsteer(0, 3.5, .5);
+            sleep(500);
+
+            encoderDrive(.3, 14, 14, 10, false);
+            sleep(500);
+
+            encoderDrive(.3, -19, 19, 10, false);
+            sleep(500);
+
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
+            robot.armUpper.setPower(.7);
+
+            encoderDrive(.3, -24, -24, 10, false);
+            sleep(500);
+
+            autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
+            autonomousClass.telemetry.update();
+
+            int targetPos = encoderDrive(.5, 68, 68, 10, true);
+
+            autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
+            autonomousClass.telemetry.update();
+
+            encoderDrive(.3, 27, -27, 10, false);
+
+            encoderDrive(.3, .5, -.5, 10, false); //TODO Was 1.5
+            sleep(250);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setPower(1);
+
+            encoderDrive(.7, 42,42, 10, false);
+            sleep(750);
+
+            robot.door.setPosition(DOOR_OPEN_POS);
+            sleep(700);
+
+            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            encoderDrive(.5, -80,-80, 10, false);
 
         }
 
