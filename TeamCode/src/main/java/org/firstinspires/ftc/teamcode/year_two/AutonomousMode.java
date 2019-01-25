@@ -96,7 +96,7 @@ public class AutonomousMode {
             autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
             autonomousClass.telemetry.update();
 
-            int targetPos = encoderDrive(.5, 65, 65, 10, true);
+            int targetPos = encoderDrive(.5, 68, 68, 10, true);
 
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
@@ -234,33 +234,33 @@ public class AutonomousMode {
             //encoderDrive(.3, 25,25,10, false);
             //sleep(1500);
 
-            encoderDrive(.3, -9.0,9.0,10, false);
+            encoderDrive(.3, -8.5,8.5,10, false);
             sleep(500);
 
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
-            robot.armLower.setPower(.7);
+            robot.armLower.setPower(1);
 
-            encoderDrive(.5, 35,35, 10, false);
-            sleep(1250);
+            encoderDrive(.7, 35,35, 10, false);
+            sleep(750);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
 
-            encoderDrive(.3, -2.5, 2.5, 10, false);
+            encoderDrive(.3, -.5, .5, 10, false); //TODO Was 1.5
             sleep(250);
+
+            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             encoderDrive(.5, -73,-73, 10, false);
         }
 
         if (position == 3) {
-            encoderDrive(.3, 15, 15, 10, false);
-            sleep(500);
-
-            encoderDrive(.3, -19, 19, 10, false);
-            sleep(1000);
 
         }
 
