@@ -350,7 +350,7 @@ public class AutonomousMode_JD {
             }
             else {
                 newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
-                robot.leftFrontDrive.setPower(newSpeed;
+                robot.leftFrontDrive.setPower(newSpeed);
                 robot.rightFrontDrive.setPower(newSpeed);
                 robot.leftRearDrive.setPower(newSpeed);
                 robot.rightRearDrive.setPower(newSpeed);
@@ -430,16 +430,15 @@ public class AutonomousMode_JD {
             return speed * 0.50;
         else if (abs(currentPos - startPos) < 6 * robot.COUNTS_PER_INCH)
             return speed * 0.75;
-        else return speed;
 
-        if (abs(targetPos - currentPos) < 4 * robot.COUNTS_PER_INCH)
+        if (abs(targetPos - currentPos) < 3 * robot.COUNTS_PER_INCH)
             return speed * 0.25;
         else if (abs(targetPos - currentPos) < 6 * robot.COUNTS_PER_INCH)
             return speed * 0.50;
         else if (abs(targetPos - currentPos) < 8 * robot.COUNTS_PER_INCH)
             return speed * 0.75;
-        else
-            return speed;
+
+        return speed;
     }
     public void encoderCrabsteer(int direction, double inches, double power) throws InterruptedException //left = 0, right = 1
     {
