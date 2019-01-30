@@ -315,6 +315,13 @@ public class AutonomousMode_JD {
         int startPos;
         double newSpeed;
         boolean mineralFound;
+        boolean isTurning;
+        final double checkSpeed = 0.08;
+
+        if (abs(leftInches) == abs(rightInches))
+            isTurning = true;
+        else
+            isTurning = false;
 
         // negate left-side motors due position on robot
         leftInches = -leftInches;
@@ -343,13 +350,17 @@ public class AutonomousMode_JD {
             //Through testing, it seems that 0.08 is the slowest power we can use and still have the phone
             //able to recognize the minerals.
             if (checkMinerals) {
-                robot.leftFrontDrive.setPower(0.08);
-                robot.rightFrontDrive.setPower(0.08);
-                robot.leftRearDrive.setPower(0.08);
-                robot.rightRearDrive.setPower(0.08);
+                robot.leftFrontDrive.setPower(checkSpeed);
+                robot.rightFrontDrive.setPower(checkSpeed);
+                robot.leftRearDrive.setPower(checkSpeed);
+                robot.rightRearDrive.setPower(checkSpeed);
             }
             else {
-                newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
+                if (isTurning)
+                    newSpeed = speed;
+                else
+                    newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
+
                 robot.leftFrontDrive.setPower(newSpeed);
                 robot.rightFrontDrive.setPower(newSpeed);
                 robot.leftRearDrive.setPower(newSpeed);
@@ -378,31 +389,35 @@ public class AutonomousMode_JD {
                         robot.rightRearDrive.getCurrentPosition());
                 autonomousClass.telemetry.update();
 
-                if (checkMinerals && goldMineralIsPresent())
-                {
-                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    sleep(2250);
-                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                    //break;
-                    newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
+                if (checkMinerals) {
+                    if (mineralFound)
+                    {
+                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
+                    }
+                    else if (goldMineralIsPresent())
+                    {
+                        robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                        sleep(2250);
+                        robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                        //break;
+                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
+                        mineralFound = true;
+                    }
+                    else
+                        newSpeed = checkSpeed;
+                }
+                else {
+                    if (isTurning)
+                        newSpeed = speed;
+                    else
+                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
+                }
+                if (newSpeed != speed) {
                     robot.leftFrontDrive.setPower(newSpeed);
                     robot.rightFrontDrive.setPower(newSpeed);
                     robot.leftRearDrive.setPower(newSpeed);
                     robot.rightRearDrive.setPower(newSpeed);
-                    mineralFound = true;
                 }
-                else if (mineralFound)
-                {
-                    newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
-                    if (newSpeed != speed)
-                    {
-                        robot.leftFrontDrive.setPower(newSpeed);
-                        robot.rightFrontDrive.setPower(newSpeed);
-                        robot.leftRearDrive.setPower(newSpeed);
-                        robot.rightRearDrive.setPower(newSpeed);
-                    }
-                }
-
             }
 
             // Stop all motion;
