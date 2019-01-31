@@ -46,6 +46,9 @@ public class AutonomousMode {
         robot = new HardwareMecanum();
         this.hwMap = autonomousClass.hardwareMap;
 
+        //AutonomousMode class is passed an integer position value based on starting position of robot where...
+        //     2 = Crater side
+        //     3 = Depot side
         this.position = position;
         this.autonomousClass = autonomousClass;
     }
@@ -67,7 +70,8 @@ public class AutonomousMode {
 
         int goldMineralPosition = 0;
 
-        if (position == 2) { //Test pos
+        //This starts autonomous mode where robot begins on CRATER side
+        if (position == 2) {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
@@ -260,6 +264,7 @@ public class AutonomousMode {
             encoderDrive(.5, -68,-68, 10, false);
         }
 
+        //This begins autonomous mode where robot begins on DEPOT side
         if (position == 3) {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
