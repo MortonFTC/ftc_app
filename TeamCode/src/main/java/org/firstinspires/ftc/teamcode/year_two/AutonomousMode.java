@@ -527,6 +527,8 @@ public class AutonomousMode {
         // Ensure that the opmode is still active
         if (autonomousClass.opModeIsActive()) {
 
+            int startingPos = robot.rightFrontDrive.getCurrentPosition();
+
             // Determine new target position, and pass to motor controller
             newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int) (leftInches * robot.COUNTS_PER_INCH);
             newRightFrontTarget = robot.rightFrontDrive.getCurrentPosition() + (int) (rightInches * robot.COUNTS_PER_INCH);
@@ -545,10 +547,10 @@ public class AutonomousMode {
 
             // reset the timeout time and start motion.
             if (checkMinerals) {
-                robot.leftFrontDrive.setPower(0.08);
-                robot.rightFrontDrive.setPower(0.08);
-                robot.leftRearDrive.setPower(0.08);
-                robot.rightRearDrive.setPower(0.08);
+                robot.leftFrontDrive.setPower(0.07);
+                robot.rightFrontDrive.setPower(0.07);
+                robot.leftRearDrive.setPower(0.07);
+                robot.rightRearDrive.setPower(0.07);
             }
             else {
                 robot.leftFrontDrive.setPower(speed);
@@ -563,6 +565,10 @@ public class AutonomousMode {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
+
+            boolean goldMineralFound = false;
+            double dropArmByPos = startingPos + (31.5 * robot.COUNTS_PER_INCH);
+
             while (autonomousClass.opModeIsActive() &&
                     (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() &&
                             robot.leftRearDrive.isBusy() && robot.rightRearDrive.isBusy())) {
@@ -577,8 +583,10 @@ public class AutonomousMode {
                         robot.rightRearDrive.getCurrentPosition());
                 autonomousClass.telemetry.update();
 
-                if (checkMinerals && goldMineralIsPresent())
+                if ((checkMinerals && goldMineralIsPresent() && !goldMineralFound) ||
+                        (checkMinerals && !goldMineralFound && (robot.rightFrontDrive.getCurrentPosition() > dropArmByPos)))
                 {
+                    goldMineralFound = true;
                     robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
                     sleep(2250);
                     robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
