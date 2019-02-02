@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Autonomous(name="PickupTest", group="Auto")
+@Disabled
 public class PickupTest extends LinearOpMode {
 
     HardwareMecanum robot;
@@ -74,5 +76,10 @@ public class PickupTest extends LinearOpMode {
 
         telemetry.addData("EXITING", "YEAH!");
         sleep(1000);
+    }
+
+    @Override
+    public double getRuntime() {
+        return super.getRuntime();
     }
 }

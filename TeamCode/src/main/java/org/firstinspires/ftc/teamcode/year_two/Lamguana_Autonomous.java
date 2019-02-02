@@ -83,7 +83,7 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  */
 
 @Autonomous(name="Lamguana_Autonomous", group="Lamguana")
-//@Disabled
+@Disabled
 public class Lamguana_Autonomous extends LinearOpMode {
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
