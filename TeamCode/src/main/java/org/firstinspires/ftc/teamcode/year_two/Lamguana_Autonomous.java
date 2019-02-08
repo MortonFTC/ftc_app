@@ -86,8 +86,8 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 //@Disabled
 public class Lamguana_Autonomous extends LinearOpMode {
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    static final double     COUNTS_PER_MOTOR_REV    = 1330 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 0.5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 6.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
@@ -95,9 +95,14 @@ public class Lamguana_Autonomous extends LinearOpMode {
     // These constants define the desired driving/control characteristics
     // The can/should be tweaked to suite the specific robot drive train.
     static final double     DRIVE_SPEED             = 0.05;     // Nominal speed for better accuracy.
-    static final double     TURN_SPEED              = 0.05;     // Nominal half speed for better accuracy.
+    static final double     TURN_SPEED              = 0.01;     // Nominal half speed for better accuracy.
 
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
+
+    // COEFF - used in the getSteer function to determine speed based upon how large current error is.
+    // The steer is clipped between -1 and 1 and then +, - from speed.
+    // Example:  a COEFF of 0.1 implies that turns/corrections occur at full power until the error
+    // becomes <= 10 degrees.
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
 
@@ -111,10 +116,9 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
     // The IMU sensor object
     BNO055IMU imu;
-
-    // State used for updating telemetry
     Orientation angles;
     Acceleration gravity;
+    double currentAngle;
 
     @Override
     public void runOpMode() {
@@ -164,69 +168,118 @@ public class Lamguana_Autonomous extends LinearOpMode {
         sleep(1000);
         idle();
 
-        // Set up our telemetry dashboard
-        composeTelemetry();
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        currentAngle = angles.firstAngle;
+
+        telemetry.addData("Robot Heading = ", angles.firstAngle);
+        telemetry.update();
+        telemetry.addData("Counts Per Inch =  ", COUNTS_PER_INCH);
         telemetry.update();
 
         sleep(1000);
         idle();
+
+        // Set up our telemetry dashboard
+        composeTelemetry();
+        telemetry.update();
 
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            //telemetry.addData(">", "Robot Heading = %d", new Double(angles.firstAngle));
-            telemetry.addData("Robot Heading = ", angles.firstAngle);
-            telemetry.update();
-            telemetry.addData("Counts Per Inch =  ", COUNTS_PER_INCH);
-            telemetry.update();
         }
-
-        //gyro.resetZAxisIntegrator();
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         // Put a hold after each turn
-        telemetry.addData("Drive 1 ", angles.firstAngle);
+        telemetry.addData("Drive 1 ",currentAngle);
         telemetry.update();
-        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
-        telemetry.addData("Turn 1 ", angles.firstAngle);
+        gyroDrive(DRIVE_SPEED, 24.0, currentAngle );
+        telemetry.addData("Gyro Hold 1-1 ", currentAngle);
         telemetry.update();
-        gyroTurn( TURN_SPEED, -90.0);         // Turn  CCW to -45 Degrees
-        //gyroHold( TURN_SPEED, -90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
-        telemetry.addData("Drive 2 ", angles.firstAngle);
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+        currentAngle = getRelativeAngle(90.0);
+        telemetry.addData("Turn 1 current...", angles.firstAngle);
+        telemetry.addData("       new.......", currentAngle);
         telemetry.update();
-        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
-        telemetry.addData("Turn 2 ", angles.firstAngle);
+        gyroTurn( TURN_SPEED, currentAngle);
+        telemetry.addData("Gyro Hold 1-2 ", currentAngle);
         telemetry.update();
-        gyroTurn( TURN_SPEED, 180.0);         // Turn  CCW to -45 Degrees
-        //gyroHold( TURN_SPEED, -180.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
-        telemetry.addData("Drive 3 ", angles.firstAngle);
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+
+        //end of 1ST series - drive forward and turn
+
+        telemetry.addData("Drive 2 current... ",currentAngle);
+        telemetry.addData("        actual.... ", angles.firstAngle);
         telemetry.update();
-        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
-        telemetry.addData("Turn 3 ", angles.firstAngle);
+        gyroDrive(DRIVE_SPEED, 24.0, currentAngle );
+        telemetry.addData("Gyro Hold 2-1 ", currentAngle);
         telemetry.update();
-        gyroTurn( TURN_SPEED, 90.0);         // Turn  CCW to -45 Degrees
-        //gyroHold( TURN_SPEED, 90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
-        telemetry.addData("Drive 4 ", angles.firstAngle);
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+        currentAngle = getRelativeAngle(90.0);
+        telemetry.addData("Turn 2 current...", angles.firstAngle);
+        telemetry.addData("       new.......", currentAngle);
         telemetry.update();
-        gyroDrive(DRIVE_SPEED, 24.0, 0.0);    // Drive FWD 48 inches
-/*
-        gyroTurn( TURN_SPEED, -90.0);         // Turn  CCW to -45 Degrees
-        gyroHold( TURN_SPEED, -90.0, 1.0);    // Hold -45 Deg heading for a 1/2 second
-        gyroDrive(DRIVE_SPEED, 12.0, -45.0);  // Drive FWD 12 inches at 45 degrees
-        gyroTurn( TURN_SPEED,  45.0);         // Turn  CW  to  45 Degrees
-        gyroHold( TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
-        gyroTurn( TURN_SPEED,   0.0);         // Turn  CW  to   0 Degrees
-        gyroHold( TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for a 1 second
-        gyroDrive(DRIVE_SPEED,-48.0, 0.0);    // Drive REV 48 inches
-*/
+        gyroTurn( TURN_SPEED, currentAngle);
+        telemetry.addData("Gyro Hold 2-2 ", currentAngle);
+        telemetry.update();
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+
+        //end of 2ND series - drive forward and turn
+
+        telemetry.addData("Drive 3 current... ",currentAngle);
+        telemetry.addData("        actual.... ", angles.firstAngle);
+        telemetry.update();
+        gyroDrive(DRIVE_SPEED, 24.0, currentAngle );
+        telemetry.addData("Gyro Hold 3-1 ", currentAngle);
+        telemetry.update();
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+        currentAngle = getRelativeAngle(90.0);
+        telemetry.addData("Turn 3 current...", angles.firstAngle);
+        telemetry.addData("       new.......", currentAngle);
+        telemetry.update();
+        gyroTurn( TURN_SPEED, currentAngle);
+        telemetry.addData("Gyro Hold 3-2 ", currentAngle);
+        telemetry.update();
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+
+        //end of 3RD series - drive forward and turn
+
+        telemetry.addData("Drive 4 current... ",currentAngle);
+        telemetry.addData("        actual.... ", angles.firstAngle);
+        telemetry.update();
+        gyroDrive(DRIVE_SPEED, 24.0, currentAngle );
+        telemetry.addData("Gyro Hold 4-1 ", currentAngle);
+        telemetry.update();
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+        currentAngle = getRelativeAngle(90.0);
+        telemetry.addData("Turn 4 current...", angles.firstAngle);
+        telemetry.addData("       new.......", currentAngle);
+        telemetry.update();
+        gyroTurn( TURN_SPEED, currentAngle);
+        telemetry.addData("Gyro Hold 4-2 ", currentAngle);
+        telemetry.update();
+        gyroHold( TURN_SPEED, currentAngle, 0.5);
+
+        //end of 4TH series - drive forward and turn
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
-
+    /**
+     * The gyroDrive, gryoTurn, and gyroHold methods receive an absolute angle value.
+     * For most movements, we will want to move the robot +/- a number of degress from
+     * current location.  This method takes 2 values:  (1) the currentAngle; (2) the desired # of degrees
+     * to move and will return the correct absolute position to pass to the gyro functions.
+     */
+    public double getRelativeAngle (double moveAngle) {
+        double newAngle;
+        newAngle = currentAngle + moveAngle;
+        if (newAngle > 180)  newAngle -= 360;
+        if (newAngle <= -180) newAngle += 360;
+        return newAngle;
+    }
 
     /**
      *  Method to drive on a fixed compass bearing (angle), based on encoder counts.
@@ -281,31 +334,26 @@ public class Lamguana_Autonomous extends LinearOpMode {
                 error = getError(angle);
                 steer = getSteer(error, P_DRIVE_COEFF);
 
+                // error > 0 ==> turn <LEFT>  when moving forward
+                // error < 0 ==> turn <RIGHT> when moving forward
+
                 // if driving in reverse, the motor correction also needs to be reversed
                 if (distance < 0)
                     steer *= -1.0;
 
-                leftSpeed = speed - steer;
-                rightSpeed = speed + steer;
+                leftSpeed = Range.clip(speed - steer, DRIVE_SPEED * -1, DRIVE_SPEED);
+                rightSpeed = Range.clip(speed + steer, DRIVE_SPEED * -1, DRIVE_SPEED);
 
                 // Normalize speeds if either one exceeds +/- 1.0;
-                max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
-                if (max > 1.0)
-                {
-                    leftSpeed /= max;
-                    rightSpeed /= max;
-                }
+                //max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
+                //if (max > 1.0)
+                //{
+                //    leftSpeed /= max;
+                //    rightSpeed /= max;
+                //}
 
                 motorLeft.setPower(leftSpeed);
                 motorRight.setPower(rightSpeed);
-
-                /*// Display drive status for the driver.
-                telemetry.addData("Err/St",  "%5.1f/%5.1f",  error, steer);
-                telemetry.addData("Target",  "%7d:%7d",      newLeftTarget,  newRightTarget);
-                telemetry.addData("Actual",  "%7d:%7d",      motorLeft.getCurrentPosition(),
-                        motorRight.getCurrentPosition());
-                telemetry.addData("Speed",   "%5.2f:%5.2f",  leftSpeed, rightSpeed);
-                telemetry.update();*/
             }
 
             // Stop all motion;
@@ -385,6 +433,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
         // determine turn power based on +/- error
         error = getError(angle);
 
+        //determine our 'safe' zone.  If error within threshold, no corrections are made
         if (Math.abs(error) <= HEADING_THRESHOLD) {
             steer = 0.0;
             leftSpeed  = 0.0;
@@ -392,7 +441,12 @@ public class Lamguana_Autonomous extends LinearOpMode {
             onTarget = true;
         }
         else {
-            steer = getSteer(error, PCoeff);
+            steer = Range.clip(getSteer(error, PCoeff), DRIVE_SPEED * -1, DRIVE_SPEED);
+            // error > 0 ==> turn <LEFT>  when moving forward
+            // error < 0 ==> turn <RIGHT> when moving forward
+
+            // set LEFT and RIGHT speed as negation of each other to ensure that robot
+            // turns in place
             rightSpeed  = speed * steer;
             leftSpeed   = -rightSpeed;
         }
@@ -421,6 +475,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
         // calculate error in -179 to +180 range  (
         //robotError = targetAngle - gyro.getIntegratedZValue();
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         robotError = targetAngle - angles.firstAngle;
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
