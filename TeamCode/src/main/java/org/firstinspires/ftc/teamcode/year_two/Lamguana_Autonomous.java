@@ -83,7 +83,7 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  */
 
 @Autonomous(name="Lamguana_Autonomous", group="Lamguana")
-@Disabled
+//@Disabled
 public class Lamguana_Autonomous extends LinearOpMode {
 
     static final double     COUNTS_PER_MOTOR_REV    = 1330 ;    // eg: TETRIX Motor Encoder
@@ -94,8 +94,8 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
     // These constants define the desired driving/control characteristics
     // The can/should be tweaked to suite the specific robot drive train.
-    static final double     DRIVE_SPEED             = 0.05;     // Nominal speed for better accuracy.
-    static final double     TURN_SPEED              = 0.01;     // Nominal half speed for better accuracy.
+    static final double     DRIVE_SPEED             = 0.3;     // Nominal speed for better accuracy.
+    static final double     TURN_SPEED              = 0.05;     // Nominal half speed for better accuracy.
 
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
 
@@ -104,7 +104,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
     // Example:  a COEFF of 0.1 implies that turns/corrections occur at full power until the error
     // becomes <= 10 degrees.
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
-    static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
+    static final double     P_DRIVE_COEFF           = 0.05;     // Larger is more responsive, but also less stable
 
     private DcMotor motorLeft;
     private DcMotor motorRight;
@@ -193,18 +193,19 @@ public class Lamguana_Autonomous extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         // Put a hold after each turn
-        telemetry.addData("Drive 1 ",currentAngle);
+        /*telemetry.addData("Drive 1 ",currentAngle);
         telemetry.update();
         gyroDrive(DRIVE_SPEED, 24.0, currentAngle );
         telemetry.addData("Gyro Hold 1-1 ", currentAngle);
         telemetry.update();
         gyroHold( TURN_SPEED, currentAngle, 0.5);
+        */
         currentAngle = getRelativeAngle(90.0);
         telemetry.addData("Turn 1 current...", angles.firstAngle);
         telemetry.addData("       new.......", currentAngle);
         telemetry.update();
         gyroTurn( TURN_SPEED, currentAngle);
-        telemetry.addData("Gyro Hold 1-2 ", currentAngle);
+        /*telemetry.addData("Gyro Hold 1-2 ", currentAngle);
         telemetry.update();
         gyroHold( TURN_SPEED, currentAngle, 0.5);
 
@@ -263,7 +264,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
         gyroHold( TURN_SPEED, currentAngle, 0.5);
 
         //end of 4TH series - drive forward and turn
-
+        */
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
@@ -322,7 +323,9 @@ public class Lamguana_Autonomous extends LinearOpMode {
             motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // start motion.
-            speed = Range.clip(Math.abs(speed), 0.0, 1.0);
+            //speed = Range.clip(Math.abs(speed), 0.0, 1.0);
+            //telemetry.addData("Drive Speed = ", speed);
+            //telemetry.update();
             motorLeft.setPower(speed);
             motorRight.setPower(speed);
 
@@ -331,18 +334,21 @@ public class Lamguana_Autonomous extends LinearOpMode {
                     (motorLeft.isBusy() && motorRight.isBusy())) {
 
                 // adjust relative speed based on heading error.
-                error = getError(angle);
-                steer = getSteer(error, P_DRIVE_COEFF);
+                //error = getError(angle);
+                //steer = getSteer(error, P_DRIVE_COEFF);
 
                 // error > 0 ==> turn <LEFT>  when moving forward
                 // error < 0 ==> turn <RIGHT> when moving forward
 
                 // if driving in reverse, the motor correction also needs to be reversed
-                if (distance < 0)
+                /*if (distance < 0)
                     steer *= -1.0;
 
                 leftSpeed = Range.clip(speed - steer, DRIVE_SPEED * -1, DRIVE_SPEED);
                 rightSpeed = Range.clip(speed + steer, DRIVE_SPEED * -1, DRIVE_SPEED);
+                telemetry.addData("Left Speed = ", leftSpeed);
+                telemetry.addData("Right Speed = ", rightSpeed);
+                telemetry.update();
 
                 // Normalize speeds if either one exceeds +/- 1.0;
                 //max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
@@ -354,6 +360,7 @@ public class Lamguana_Autonomous extends LinearOpMode {
 
                 motorLeft.setPower(leftSpeed);
                 motorRight.setPower(rightSpeed);
+                 */
             }
 
             // Stop all motion;
