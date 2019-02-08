@@ -20,7 +20,7 @@ import java.util.Locale;
 
 import static java.lang.Thread.sleep;
 
-//@Disabled
+@Disabled
 @TeleOp(name = "Lamgunana_V3", group = "Lamguana")
 public class Lamguana_V3 extends OpMode {
 

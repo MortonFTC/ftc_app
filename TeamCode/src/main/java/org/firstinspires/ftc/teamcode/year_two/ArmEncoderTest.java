@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import static java.lang.Thread.sleep;
 
 @Autonomous(name="ArmEncoderTest", group="Auto")
+@Disabled
 public class ArmEncoderTest extends LinearOpMode {
 
     HardwareMecanum robot;

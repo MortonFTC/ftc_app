@@ -91,8 +91,14 @@ public class AutonomousMode {
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
-            robot.armUpper.setPower(.7);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
 
             encoderDrive(.3, -24, -24, 10, false);
             sleep(500);
@@ -244,11 +250,11 @@ public class AutonomousMode {
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
             robot.armLower.setPower(1);
 
             encoderDrive(.7, 36,36, 10, false);
-            sleep(750);
+            sleep(500);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
@@ -285,8 +291,14 @@ public class AutonomousMode {
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
-            robot.armUpper.setPower(.7);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
 
             encoderDrive(.3, -24, -24, 10, false);
             sleep(500);
@@ -305,11 +317,11 @@ public class AutonomousMode {
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
             robot.armLower.setPower(1);
 
             encoderDrive(.7, 47,47, 10, false);
-            sleep(750);
+            sleep(500);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
@@ -572,6 +584,7 @@ public class AutonomousMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
 
             boolean goldMineralFound = false;
+            double firstInches = startingPos + (4 * robot.COUNTS_PER_INCH);
             double dropArmByPos = startingPos + (31.5 * robot.COUNTS_PER_INCH);
 
             while (autonomousClass.opModeIsActive() &&
@@ -593,7 +606,12 @@ public class AutonomousMode {
                 {
                     goldMineralFound = true;
                     robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    sleep(2250);
+                    int time = 2250;
+                    if (robot.rightFrontDrive.getCurrentPosition() < firstInches)
+                    {
+                        time = 3000;
+                    }
+                    sleep(time);
                     robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
                     //break;
                     robot.leftFrontDrive.setPower(speed);

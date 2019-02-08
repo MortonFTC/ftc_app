@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -73,6 +74,7 @@ import org.firstinspires.ftc.teamcode.year_two.HardwareMecanum;
 
 
 @Autonomous(name="Mecanum: Auto Drive By Encoder (Blue Long)", group="Auto")
+@Disabled
 public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     /* Declare OpMode members. */
