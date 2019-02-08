@@ -247,13 +247,15 @@ public class Teleop2018 extends OpMode {
 
         if (g_right_y != 0 && Math.abs(g_right_y) >= .15) { //Deadzone for joystick
             if (-g_right_y > .15) { //If joystick is up.
-                robot.armUpper.setPower(g_right_y * .7);
+                robot.armUpper.setPower(g_right_y * -.7);
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
+                telemetry.addData("ControllerPosition", g_right_y);
                 telemetry.update();
             } else if (-g_right_y < -.15) { //If joystick is down.
                 telemetry.addData("EncoderUpperPosition", robot.armUpper.getCurrentPosition());
+                telemetry.addData("ControllerPosition", g_right_y);
                 telemetry.update();
-                robot.armUpper.setPower(g_right_y * .7);
+                robot.armUpper.setPower(g_right_y * -.7);
             }
         }
         else {
