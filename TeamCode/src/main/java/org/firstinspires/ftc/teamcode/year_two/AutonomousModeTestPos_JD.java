@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 public class AutonomousModeTestPos_JD extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        AutonomousMode_JD am = new AutonomousMode_JD(this, 2);
+        AutonomousMode_JD am = new AutonomousMode_JD(this, 9);
         am.startAutonomousMode();
     }
 }

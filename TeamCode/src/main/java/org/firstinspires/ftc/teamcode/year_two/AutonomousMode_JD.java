@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -12,11 +16,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.opencv.core.Mat;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
-import static java.lang.Math.abs;
+import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
 public class AutonomousMode_JD {
@@ -28,8 +32,29 @@ public class AutonomousMode_JD {
 
     HardwareMap hwMap;
 
-    Orientation lastAngles = new Orientation();
+    // The IMU sensor object
+    BNO055IMU imu;
+    Orientation angles;
+    Acceleration gravity;
+    double targetAngle;
     double globalAngle;
+
+    // These constants define the desired driving/control characteristics
+    // The can/should be tweaked to suite the specific robot drive train.
+    static final double     DRIVE_SPEED             = 0.3;     // Nominal speed for better accuracy.
+    static final double     TURN_SPEED              = 0.3;     // Nominal half speed for better accuracy.
+
+    static final double     HEADING_THRESHOLD       = 1;      // As tight as we can make it with an integer gyro
+    static final double     ERROR_THRESHOLD         = 20;
+
+    // COEFF - used in the getSteer function to determine speed based upon how large current error is.
+    // The steer is clipped between -1 and 1 and then +, - from speed.
+    // Example:  a COEFF of 0.1 implies that turns/corrections occur at full power until the error
+    // becomes <= 10 degrees.
+    // Test runs indicate IMU overturns by 15 degrees so the COEFF must be set to reduce speed before that.
+    // Example:  20 degree error ==> 0.05 COEFF
+    static final double     P_TURN_COEFF            = 0.05D;     // Larger is more responsive, but also less stable
+    static final double     P_DRIVE_COEFF           = 0.05D;     // Larger is more responsive, but also less stable
 
     private static final String VUFORIA_KEY = "AeWrHWf/////AAAAmZG3057lc0JXoVs+HjtHkjZyYL2/IQH4DPGcMKxDXU12F688beSRkSeE6Oz1nH1imNIbBvdwCWFtpqBTu9aqKnlQ9XE3cDLcuUa6/iv0yK3oKy/4p+C1KqltmtvLTda0rgoW8mVcohX38181Apke+iCMjogFT0FHT+3o36MrhYRT03H7Al4Ynqd09uLIGiCXwffq0Ws+YJvWbgbw3Upvjn+Rpbh/xUckxiqFFfU/5j5uCdjMFvUn3YLrLelYAKsaKLKTfMy+OeMbv8wd9By4EjM+A9RB7HKVv3pNZX8fOD9MuSh8y9zV+ZZi+EzcAzJehi9M4mLq7qAmjUgs4qOvtafr6L2dav8Vfw8TarFoD1mk";
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -48,6 +73,9 @@ public class AutonomousMode_JD {
         robot = new HardwareMecanum();
         this.hwMap = autonomousClass.hardwareMap;
 
+        //AutonomousMode class is passed an integer position value based on starting position of robot where...
+        //     2 = Crater side
+        //     3 = Depot side
         this.position = position;
         this.autonomousClass = autonomousClass;
     }
@@ -69,10 +97,50 @@ public class AutonomousMode_JD {
 
         int goldMineralPosition = 0;
 
-        if (position == 2) { //Test pos
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hwMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        // Send telemetry message to alert driver that we are calibrating;
+        autonomousClass.telemetry.addData(">", "Calibrating IMU");    //
+        autonomousClass.telemetry.update();
+
+        // make sure the gyro is calibrated before continuing
+        while (!autonomousClass.isStopRequested() && !imu.isGyroCalibrated())  {
+            sleep(50);
+            autonomousClass.idle();
+        }
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        targetAngle = angles.firstAngle;
+
+        autonomousClass.telemetry.addData(">", "Robot Ready.");    //
+        autonomousClass.telemetry.update();
+
+        if (position == 9) {
+            targetAngle = getRelativeAngle(90.0);
+            autonomousClass.telemetry.addData("Turn current...", angles.firstAngle);
+            autonomousClass.telemetry.addData("     new.......", targetAngle);
+            autonomousClass.telemetry.addData("Speed = ", TURN_SPEED);
+            autonomousClass.telemetry.addData("COEFF = ", P_TURN_COEFF);
+            autonomousClass.telemetry.update();
+            gyroTurn( TURN_SPEED, targetAngle);
+
+        }
+        //This starts autonomous mode where robot begins on CRATER side
+        if (position == 2) {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
@@ -89,8 +157,14 @@ public class AutonomousMode_JD {
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
-            robot.armUpper.setPower(.7);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
 
             encoderDrive(.3, -24, -24, 10, false);
             sleep(500);
@@ -102,23 +176,22 @@ public class AutonomousMode_JD {
 
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
-
-            encoderDrive(.3, -8.5,8.5,10, false);
+            encoderDrive(.3, -7.0,7.0,10, false);
             sleep(500);
 
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
             robot.armLower.setPower(1);
 
-            encoderDrive(.7, 42,42, 10, false);
-            sleep(750);
+            encoderDrive(.7, 36,36, 10, false);
+            sleep(500);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
 
-            encoderDrive(.3, -.5, .5, 10, false); //TODO Was 1.5
+            encoderDrive(.3, -3, 3, 10, false); //TODO Was 1.5
             sleep(250);
 
             robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -126,13 +199,14 @@ public class AutonomousMode_JD {
             robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            encoderDrive(.5, -80,-80, 10, false);
+            encoderDrive(.5, -68,-68, 10, false);
         }
 
+        //This begins autonomous mode where robot begins on DEPOT side
         if (position == 3) {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
@@ -149,8 +223,14 @@ public class AutonomousMode_JD {
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 7900);
-            robot.armUpper.setPower(.7);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
 
             encoderDrive(.3, -24, -24, 10, false);
             sleep(500);
@@ -163,145 +243,46 @@ public class AutonomousMode_JD {
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
 
-            encoderDrive(.3, 27, -27, 10, false);
-
-            encoderDrive(.3, .5, -.5, 10, false); //TODO Was 1.5
+            encoderDrive(.3, 25.5, -25.5, 10, false);
             sleep(250);
 
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 6500);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
             robot.armLower.setPower(1);
 
-            encoderDrive(.7, 42,42, 10, false);
-            sleep(750);
+            encoderDrive(.7, 47,47, 10, false);
+            sleep(500);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
+
+            encoderDrive(.3, 2.5, -2.5, 10, false); //TODO Was 1.5
+            sleep(250);
 
             robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            encoderDrive(.5, -80,-80, 10, false);
+            encoderDrive(.5, -62,-62,10, false);
 
-        }
-
-        if (position == 0) {
-
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
-
-            robot.armLower.setPower(.5);
-            Thread.sleep(3500);
-
-            encoderCrabsteer(0, 3.5, .5);
-
-            sleep(2000);
-
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
-            //TODO Reset lower arm encoders
-
-            encoderDrive(.4, 45, 45, 10, false);
-        }
-
-        if (position == 1) {
-
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
-
-            robot.armLower.setPower(.5);
-            Thread.sleep(3500);
-
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
-            encoderCrabsteer(0, 3.5, .5);
-
-            //TODO Reset lower arm encoders
-
-
-            encoderDrive(.3, 15, 15, 10, false);
-            sleep(500);
-
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
-
-            robot.armLower.setPower(.2);
-            robot.armUpper.setPower(1);
-
-            encoderCrabsteer(1, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 1;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
-                pushMineral(1);
-            }
-
-            encoderCrabsteer(0, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 2;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
-
-                pushMineral(2);
-            }
-
-            encoderCrabsteer(0, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 3;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
-
-                pushMineral(3);
-            }
-
-            if (positionDecided == false) {
-
-            }
-
-            encoderCrabsteer(0, 34, .3);
-            sleep(2500);
-            encoderDrive(.3, 8.5, -8.5, 10, false); //Turn parallel to wall.
-            sleep(250);
-
-            encoderDrive(.6, 48.5, 48.5, 20, false);
-            sleep(2000);
-
-            robot.door.setPosition(.45D + 90/280.0);
-            sleep(1500);
-            robot.door.setPosition(.45D);
-
-            //TODO Place marker
-
-            encoderDrive(.6, -82, -82, 20, false);
-            sleep(2500);
         }
     }
 
-    public void rampSpeedDrive() {
-
+    /**
+     * The gyroDrive, gryoTurn, and gyroHold methods receive an absolute angle value.
+     * For most movements, we will want to move the robot +/- a number of degress from
+     * current location.  This method takes 2 values:  (1) the currentAngle; (2) the desired # of degrees
+     * to move and will return the correct absolute position to pass to the gyro functions.
+     */
+    public double getRelativeAngle (double moveAngle) {
+        double newAngle;
+        newAngle = targetAngle + moveAngle;
+        if (newAngle > 180)  newAngle -= 360;
+        if (newAngle <= -180) newAngle += 360;
+        return newAngle;
     }
 
     public int encoderDrive (double speed,
@@ -312,16 +293,6 @@ public class AutonomousMode_JD {
         int newRightFrontTarget;
         int newLeftRearTarget;
         int newRightRearTarget;
-        int startPos;
-        double newSpeed;
-        boolean mineralFound;
-        boolean isTurning;
-        final double checkSpeed = 0.08;
-
-        if (abs(leftInches) == abs(rightInches))
-            isTurning = true;
-        else
-            isTurning = false;
 
         // negate left-side motors due position on robot
         leftInches = -leftInches;
@@ -329,7 +300,7 @@ public class AutonomousMode_JD {
         // Ensure that the opmode is still active
         if (autonomousClass.opModeIsActive()) {
 
-            startPos = robot.leftFrontDrive.getCurrentPosition();
+            int startingPos = robot.rightFrontDrive.getCurrentPosition();
 
             // Determine new target position, and pass to motor controller
             newLeftFrontTarget = robot.leftFrontDrive.getCurrentPosition() + (int) (leftInches * robot.COUNTS_PER_INCH);
@@ -347,24 +318,18 @@ public class AutonomousMode_JD {
             robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            //Through testing, it seems that 0.08 is the slowest power we can use and still have the phone
-            //able to recognize the minerals.
+            // reset the timeout time and start motion.
             if (checkMinerals) {
-                robot.leftFrontDrive.setPower(checkSpeed);
-                robot.rightFrontDrive.setPower(checkSpeed);
-                robot.leftRearDrive.setPower(checkSpeed);
-                robot.rightRearDrive.setPower(checkSpeed);
+                robot.leftFrontDrive.setPower(0.07);
+                robot.rightFrontDrive.setPower(0.07);
+                robot.leftRearDrive.setPower(0.07);
+                robot.rightRearDrive.setPower(0.07);
             }
             else {
-                if (isTurning)
-                    newSpeed = speed;
-                else
-                    newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget,speed);
-
-                robot.leftFrontDrive.setPower(newSpeed);
-                robot.rightFrontDrive.setPower(newSpeed);
-                robot.leftRearDrive.setPower(newSpeed);
-                robot.rightRearDrive.setPower(newSpeed);
+                robot.leftFrontDrive.setPower(speed);
+                robot.rightFrontDrive.setPower(speed);
+                robot.leftRearDrive.setPower(speed);
+                robot.rightRearDrive.setPower(speed);
             }
 
             // keep looping while we are still active, and there is time left, and both motors are running.
@@ -374,7 +339,10 @@ public class AutonomousMode_JD {
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
 
-            mineralFound = false;
+            boolean goldMineralFound = false;
+            double firstInches = startingPos + (4 * robot.COUNTS_PER_INCH);
+            double dropArmByPos = startingPos + (31.5 * robot.COUNTS_PER_INCH);
+
             while (autonomousClass.opModeIsActive() &&
                     (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() &&
                             robot.leftRearDrive.isBusy() && robot.rightRearDrive.isBusy())) {
@@ -389,35 +357,25 @@ public class AutonomousMode_JD {
                         robot.rightRearDrive.getCurrentPosition());
                 autonomousClass.telemetry.update();
 
-                if (checkMinerals) {
-                    if (mineralFound)
+                if ((checkMinerals && goldMineralIsPresent() && !goldMineralFound) ||
+                        (checkMinerals && !goldMineralFound && (robot.rightFrontDrive.getCurrentPosition() > dropArmByPos)))
+                {
+                    goldMineralFound = true;
+                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+                    int time = 2250;
+                    if (robot.rightFrontDrive.getCurrentPosition() < firstInches)
                     {
-                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
+                        time = 3000;
                     }
-                    else if (goldMineralIsPresent())
-                    {
-                        robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                        sleep(2250);
-                        robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                        //break;
-                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
-                        mineralFound = true;
-                    }
-                    else
-                        newSpeed = checkSpeed;
+                    sleep(time);
+                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+                    //break;
+                    robot.leftFrontDrive.setPower(speed);
+                    robot.rightFrontDrive.setPower(speed);
+                    robot.leftRearDrive.setPower(speed);
+                    robot.rightRearDrive.setPower(speed);
                 }
-                else {
-                    if (isTurning)
-                        newSpeed = speed;
-                    else
-                        newSpeed = determineSpeed(startPos, robot.leftFrontDrive.getCurrentPosition(), newLeftFrontTarget, speed);
-                }
-                if (newSpeed != speed) {
-                    robot.leftFrontDrive.setPower(newSpeed);
-                    robot.rightFrontDrive.setPower(newSpeed);
-                    robot.leftRearDrive.setPower(newSpeed);
-                    robot.rightRearDrive.setPower(newSpeed);
-                }
+
             }
 
             // Stop all motion;
@@ -437,24 +395,7 @@ public class AutonomousMode_JD {
         }
         return 0;
     }
-    public double determineSpeed (int startPos, int currentPos, int targetPos, double speed) throws InterruptedException
-    {
-        if (abs(currentPos - startPos) < 2 * robot.COUNTS_PER_INCH)
-            return speed * 0.25;
-        else if (abs(currentPos - startPos) < 4 * robot.COUNTS_PER_INCH)
-            return speed * 0.50;
-        else if (abs(currentPos - startPos) < 6 * robot.COUNTS_PER_INCH)
-            return speed * 0.75;
 
-        if (abs(targetPos - currentPos) < 3 * robot.COUNTS_PER_INCH)
-            return speed * 0.25;
-        else if (abs(targetPos - currentPos) < 6 * robot.COUNTS_PER_INCH)
-            return speed * 0.50;
-        else if (abs(targetPos - currentPos) < 8 * robot.COUNTS_PER_INCH)
-            return speed * 0.75;
-
-        return speed;
-    }
     public void encoderCrabsteer(int direction, double inches, double power) throws InterruptedException //left = 0, right = 1
     {
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -467,7 +408,7 @@ public class AutonomousMode_JD {
         robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        double powerFinal = abs(power);
+        double powerFinal = Math.abs(power);
 
         double countsToMove = inches * robot.COUNTS_PER_INCH;
 
@@ -506,7 +447,7 @@ public class AutonomousMode_JD {
 
         Orientation angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+        double deltaAngle = angles.firstAngle - angles.firstAngle;
 
         if (deltaAngle < -180)
             deltaAngle += 360;
@@ -515,7 +456,7 @@ public class AutonomousMode_JD {
 
         globalAngle += deltaAngle;
 
-        lastAngles = angles;
+        //angles.getClass() = angles;
 
         return globalAngle;
     }
@@ -604,7 +545,7 @@ public class AutonomousMode_JD {
     }
 
     private void resetAngle() {
-        lastAngles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        //lastAngles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         globalAngle = 0;
     }
@@ -677,64 +618,6 @@ public class AutonomousMode_JD {
         robot.flipperServo.setPosition(0);
     }
 
-     /*
-    public void drive(double leftInches, double rightInches, double power)
-    {
-        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * leftInches))));
-        robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * leftInches))));
-
-        robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * rightInches)));
-        robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * robot.WHEEL_CIRCUMFERENCE * rightInches)));
-
-        robot.leftFrontDrive.setPower(power);
-        robot.leftRearDrive.setPower(power);
-        robot.rightFrontDrive.setPower(power);
-        robot.rightRearDrive.setPower(power);
-    }*/
-
-    /*public void crabSteer(int direction, double inches, double power) //0 = left, 1 = right
-    {
-        double modifiedInches = inches * 3;
-
-        int leftFrontModifier = 0; //If direction is not either a 1 or a 0, the robot will not crabsteer.
-        int leftRearModifier = 0;
-        int rightFrontModifier = 0;
-        int rightRearModifier = 0;
-
-        if (direction == 0){
-            leftFrontModifier = -1;
-            leftRearModifier = 1;
-            rightFrontModifier= -1;
-            rightRearModifier = 1;
-        }
-        else if (direction == 1)
-        {
-            leftFrontModifier = 1;
-            leftRearModifier = -1;
-            rightFrontModifier = 1;
-            rightRearModifier = -1;
-        }
-
-        while (true) {
-
-            robot.leftFrontDrive.setTargetPosition((int) Math.round(-(robot.leftFrontDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches))));
-            robot.leftRearDrive.setTargetPosition((int) Math.round(-(robot.leftRearDrive.getCurrentPosition() - (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches))));
-
-            robot.rightFrontDrive.setTargetPosition((int) Math.round(robot.rightFrontDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches)));
-            robot.rightRearDrive.setTargetPosition((int) Math.round(robot.rightRearDrive.getCurrentPosition() + (robot.WHEELS_COUNTS_PER_SHAFT_REV * WHEEL_CIRCUMFERENCE * inches)));
-
-            robot.leftFrontDrive.setPower(power);
-            robot.leftRearDrive.setPower(power);
-            robot.rightFrontDrive.setPower(power);
-            robot.rightRearDrive.setPower(power);
-        }
-    }*/
-
     public void crabSteer(int direction, double miliseconds, double power) throws
             InterruptedException //left = 0, right = 1
     {
@@ -744,7 +627,7 @@ public class AutonomousMode_JD {
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         long time = System.currentTimeMillis();
-        double powerFinal = abs(power);
+        double powerFinal = Math.abs(power);
 
         while (System.currentTimeMillis() < time + miliseconds) {
             if (direction == 0) {
@@ -779,6 +662,7 @@ public class AutonomousMode_JD {
         // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
     }
 
+
     /**
      * Initialize the Tensor Flow Object Detection engine.
      */
@@ -789,4 +673,257 @@ public class AutonomousMode_JD {
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
+    /**
+     *  Method to spin on central axis to point in a new direction.
+     *  Move will stop if either of these conditions occur:
+     *  1) Move gets to the heading (angle)
+     *  2) Driver stops the opmode running.
+     *
+     * @param speed Desired speed of turn.
+     * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
+     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                   If a relative angle is required, add/subtract from current heading.
+     */
+    /**
+     *  Method to drive on a fixed compass bearing (angle), based on encoder counts.
+     *  Move will stop if either of these conditions occur:
+     *  1) Move gets to the desired position
+     *  2) Driver stops the opmode running.
+     *
+     * @param speed      Target speed for forward motion.  Should allow for _/- variance for adjusting heading
+     * @param distance   Distance (in inches) to move from current position.  Negative distance means move backwards.
+     * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
+     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                   If a relative angle is required, add/subtract from current heading.
+     */
+    public void gyroDrive ( double speed,
+                            double distance,
+                            double angle) {
+
+        int     newLeftTarget;
+        int     newRightTarget;
+        int     moveCounts;
+        double  max;
+        double  error;
+        double  steer;
+        double  leftSpeed;
+        double  rightSpeed;
+
+        // Ensure that the opmode is still active
+        if (autonomousClass.opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            moveCounts = (int)(distance * robot.COUNTS_PER_INCH);
+
+            newLeftTarget = robot.leftFrontDrive.getCurrentPosition() + moveCounts;
+            robot.leftFrontDrive.setTargetPosition(newLeftTarget);
+            newLeftTarget = robot.leftRearDrive.getCurrentPosition() + moveCounts;
+            robot.leftRearDrive.setTargetPosition(newLeftTarget);
+            newRightTarget = robot.rightFrontDrive.getCurrentPosition() + moveCounts;
+            robot.rightFrontDrive.setTargetPosition(newRightTarget);
+            newRightTarget = robot.rightRearDrive.getCurrentPosition() + moveCounts;
+            robot.rightRearDrive.setTargetPosition(newRightTarget);
+
+            robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // start motion.
+            //speed = Range.clip(Math.abs(speed), 0.0, 1.0);
+            //telemetry.addData("Drive Speed = ", speed);
+            //telemetry.update();
+            robot.leftFrontDrive.setPower(speed);
+            robot.leftRearDrive.setPower(speed);
+            robot.rightFrontDrive.setPower(speed);
+            robot.rightRearDrive.setPower(speed);
+
+            // keep looping while we are still active, and BOTH motors are running.
+            while (autonomousClass.opModeIsActive() &&
+                    (robot.leftRearDrive.isBusy() && robot.leftFrontDrive.isBusy() &&
+                     robot.rightRearDrive.isBusy() && robot.rightFrontDrive.isBusy())) {
+
+                // adjust relative speed based on heading error.
+                error = getError(angle);
+                steer = getSteer(error, P_DRIVE_COEFF);
+
+                // error > 0 ==> turn <LEFT>  when moving forward
+                // error < 0 ==> turn <RIGHT> when moving forward
+
+                // if driving in reverse, the motor correction also needs to be reversed
+                if (distance < 0)
+                    steer *= -1.0;
+
+                leftSpeed = Range.clip(speed - steer, DRIVE_SPEED * -1, DRIVE_SPEED);
+                rightSpeed = Range.clip(speed + steer, DRIVE_SPEED * -1, DRIVE_SPEED);
+                autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
+                autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
+                autonomousClass.telemetry.update();
+
+                // Normalize speeds if either one exceeds +/- 1.0;
+                //max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
+                //if (max > 1.0)
+                //{
+                //    leftSpeed /= max;
+                //    rightSpeed /= max;
+                //}
+
+                robot.leftFrontDrive.setPower(leftSpeed);
+                robot.leftRearDrive.setPower(leftSpeed);
+                robot.rightFrontDrive.setPower(rightSpeed);
+                robot.rightRearDrive.setPower(rightSpeed);
+            }
+
+            // Stop all motion;
+            robot.leftFrontDrive.setPower(0);
+            robot.leftRearDrive.setPower(0);
+            robot.rightFrontDrive.setPower(0);
+            robot.rightRearDrive.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+    }
+
+    public void gyroTurn (  double speed, double angle) {
+
+        // keep looping while we are still active, and not on heading.
+        while (autonomousClass.opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
+            // Update telemetry & Allow time for other processes to run.
+            autonomousClass.telemetry.update();
+        }
+    }
+
+    /**
+     *  Method to obtain & hold a heading for a finite amount of time
+     *  Move will stop once the requested time has elapsed
+     *
+     * @param speed      Desired speed of turn.
+     * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
+     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                   If a relative angle is required, add/subtract from current heading.
+     * @param holdTime   Length of time (in seconds) to hold the specified heading.
+     */
+    public void gyroHold( double speed, double angle, double holdTime) {
+
+        ElapsedTime holdTimer = new ElapsedTime();
+
+        // keep looping while we have time remaining.
+        holdTimer.reset();
+        while (autonomousClass.opModeIsActive() && (holdTimer.time() < holdTime)) {
+            // Update telemetry & Allow time for other processes to run.
+            onHeading(speed, angle, P_TURN_COEFF);
+            //telemetry.update();
+        }
+
+        // Stop all motion;
+        robot.leftRearDrive.setPower(0);
+        robot.leftFrontDrive.setPower(0);
+        robot.rightRearDrive.setPower(0);
+        robot.rightFrontDrive.setPower(0);
+    }
+
+    /**
+     * Perform one cycle of closed loop heading control.
+     *
+     * @param speed     Desired speed of turn.
+     * @param angle     Absolute Angle (in Degrees) relative to last gyro reset.
+     *                  0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                  If a relative angle is required, add/subtract from current heading.
+     * @param PCoeff    Proportional Gain coefficient
+     * @return
+     */
+    boolean onHeading(double speed, double angle, double PCoeff) {
+        double   error ;
+        double   steer ;
+        boolean  onTarget = false ;
+        double leftSpeed;
+        double rightSpeed;
+
+        // determine turn power based on +/- error
+        error = getError(angle);
+        // error > 0 ==> turn <LEFT>  when moving forward
+        // error < 0 ==> turn <RIGHT> when moving forward
+
+        //determine our 'safe' zone.  If error within threshold, no corrections are made
+        if (Math.abs(error) <= HEADING_THRESHOLD) {
+            steer = 0.0;
+            leftSpeed  = 0.0;
+            rightSpeed = 0.0;
+            onTarget = true;
+        }
+        else {
+            //steer = Range.clip(getSteer(error, PCoeff), TURN_SPEED * -1, TURN_SPEED);
+            if (error < 0)
+                speed = speed * -1;
+
+            // divide the ERROR_THRESHOLD into quartiles to reduce speed as we near our heading
+            // for each quartile, we will reduce speed by 1/2
+
+            if (error <= ERROR_THRESHOLD * 0.25)
+                //speed = speed / Math.pow(2, 4);
+                speed = speed / 8;
+            else if (error <= ERROR_THRESHOLD * 0.50)
+                //speed = speed / Math.pow(2, 3);
+                speed = speed / 6;
+            else  if (error <= ERROR_THRESHOLD * 0.75)
+                //speed = speed / Math.pow(2, 2);
+                speed = speed / 4;
+            else if (error <= ERROR_THRESHOLD)
+                //speed = speed / Math.pow(2, 3);
+                speed = speed / 2;
+            else
+                speed = speed;
+
+            // set LEFT and RIGHT speed as negation of each other to ensure that robot
+            // turns in place
+            rightSpeed  = speed;
+            leftSpeed   = -rightSpeed;
+        }
+
+        // Send desired speeds to motors.
+        robot.leftFrontDrive.setPower(leftSpeed);
+        robot.leftRearDrive.setPower(leftSpeed);
+        robot.rightFrontDrive.setPower(rightSpeed);
+        robot.rightRearDrive.setPower(rightSpeed);
+
+        // Display it for the driver.
+        autonomousClass.telemetry.addData("Angle/Error", "%5.2f/%5.2f", angles.firstAngle, error);
+        autonomousClass.telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
+
+        return onTarget;
+    }
+
+    /**
+     * getError determines the error between the target angle and the robot's current heading
+     * @param   targetAngle  Desired angle (relative to global reference established at last Gyro Reset).
+     * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of reference
+     *          +ve error means the robot should turn LEFT (CCW) to reduce error.
+     */
+    public double getError(double targetAngle) {
+
+        double robotError;
+
+        // calculate error in -179 to +180 range  (
+        //robotError = targetAngle - gyro.getIntegratedZValue();
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        robotError = targetAngle - angles.firstAngle;
+        while (robotError > 180)  robotError -= 360;
+        while (robotError <= -180) robotError += 360;
+        return robotError;
+    }
+
+    /**
+     * returns desired steering force.  +/- 1 range.  +ve = steer left
+     * @param error   Error angle in robot relative degrees
+     * @param PCoeff  Proportional Gain Coefficient
+     * @return
+     */
+    public double getSteer(double error, double PCoeff) {
+        return Range.clip(error * PCoeff, -1, 1);
+    }
+
 }
