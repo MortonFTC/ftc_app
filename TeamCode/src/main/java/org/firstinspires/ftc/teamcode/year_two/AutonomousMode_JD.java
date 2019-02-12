@@ -20,6 +20,7 @@ import org.opencv.core.Mat;
 
 import java.util.List;
 
+import static java.lang.Math.abs;
 import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
@@ -45,7 +46,6 @@ public class AutonomousMode_JD {
     static final double     TURN_SPEED              = 0.3;     // Nominal half speed for better accuracy.
 
     static final double     HEADING_THRESHOLD       = 1;      // As tight as we can make it with an integer gyro
-    static final double     ERROR_THRESHOLD         = 20;
 
     // COEFF - used in the getSteer function to determine speed based upon how large current error is.
     // The steer is clipped between -1 and 1 and then +, - from speed.
@@ -408,7 +408,7 @@ public class AutonomousMode_JD {
         robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        double powerFinal = Math.abs(power);
+        double powerFinal = abs(power);
 
         double countsToMove = inches * robot.COUNTS_PER_INCH;
 
@@ -627,7 +627,7 @@ public class AutonomousMode_JD {
         robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         long time = System.currentTimeMillis();
-        double powerFinal = Math.abs(power);
+        double powerFinal = abs(power);
 
         while (System.currentTimeMillis() < time + miliseconds) {
             if (direction == 0) {
@@ -708,6 +708,7 @@ public class AutonomousMode_JD {
         double  steer;
         double  leftSpeed;
         double  rightSpeed;
+        final double CRCTN_FACTOR = 0.05;
 
         // Ensure that the opmode is still active
         if (autonomousClass.opModeIsActive()) {
@@ -745,17 +746,38 @@ public class AutonomousMode_JD {
 
                 // adjust relative speed based on heading error.
                 error = getError(angle);
-                steer = getSteer(error, P_DRIVE_COEFF);
+                //steer = getSteer(error, P_DRIVE_COEFF);
+                /*
+                  steer calculation based on the following table of desired speeds based on error:
+                       ERROR    SPEED-LEFT  SPEED-RIGHT
+                       1        0.3         0.3         >> no correction needed
+                       2        0.285       0.3
+                       3        0.27        0.3
+                       4        0.255       0.3
+                       5        0.24        0.3
+                       10       0.165       0.3
+                       15       0.09        0.3
+                   ASSUMPITONS:  desired drive speed = 0.03 and CRCTN_FACTOR = 0.05
+                 */
+                steer = 1 - (CRCTN_FACTOR * (abs(error) - 1));
 
                 // error > 0 ==> turn <LEFT>  when moving forward
                 // error < 0 ==> turn <RIGHT> when moving forward
 
-                // if driving in reverse, the motor correction also needs to be reversed
+                // if driving in reverse, the motor correction also needs to be reversed.
+                // by reversing error, we switch which wheel has reduced speed
                 if (distance < 0)
-                    steer *= -1.0;
+                    //steer *= -1.0;
+                    error = error * -1;
 
-                leftSpeed = Range.clip(speed - steer, DRIVE_SPEED * -1, DRIVE_SPEED);
-                rightSpeed = Range.clip(speed + steer, DRIVE_SPEED * -1, DRIVE_SPEED);
+                if (error >= 0) {
+                    leftSpeed = speed * steer;
+                    rightSpeed = speed;
+                }
+                else {
+                    leftSpeed = speed;
+                    rightSpeed = speed * steer;
+                }
                 autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
                 autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
                 autonomousClass.telemetry.update();
@@ -842,6 +864,7 @@ public class AutonomousMode_JD {
         boolean  onTarget = false ;
         double leftSpeed;
         double rightSpeed;
+        static final double ERROR_THRESHOLD = 20; //angle at which we begin to reduce turning speed
 
         // determine turn power based on +/- error
         error = getError(angle);
@@ -849,7 +872,7 @@ public class AutonomousMode_JD {
         // error < 0 ==> turn <RIGHT> when moving forward
 
         //determine our 'safe' zone.  If error within threshold, no corrections are made
-        if (Math.abs(error) <= HEADING_THRESHOLD) {
+        if (abs(error) <= HEADING_THRESHOLD) {
             steer = 0.0;
             leftSpeed  = 0.0;
             rightSpeed = 0.0;
@@ -861,7 +884,7 @@ public class AutonomousMode_JD {
                 speed = speed * -1;
 
             // divide the ERROR_THRESHOLD into quartiles to reduce speed as we near our heading
-            // for each quartile, we will reduce speed by 1/2
+            // for each quartile, we will reduce speed by power of 2
 
             if (error <= ERROR_THRESHOLD * 0.25)
                 //speed = speed / Math.pow(2, 4);
