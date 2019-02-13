@@ -1,8 +1,6 @@
-package org.firstinspires.ftc.teamcode.year_two;
+package org.firstinspires.ftc.teamcode.year_two.test;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -23,8 +21,8 @@ import java.util.Locale;
 import static java.lang.Thread.sleep;
 
 @Disabled
-@TeleOp(name = "IMU_Test", group = "mortonElements")
-public class IMU_Test extends LinearOpMode {
+@TeleOp(name = "Lamgunana_V3", group = "Lamguana")
+public class Lamguana_V3 extends OpMode {
 
     //TODO Work in progress.
     private DcMotor motorLeft;
@@ -35,100 +33,115 @@ public class IMU_Test extends LinearOpMode {
     private Servo gripperServo1;
     private Servo gripperServo2;
 
-    private final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
+    private BNO055IMU imu = null;
+    private Integer elapsed_time = 0;
+    private String strElapsed_Time;
 
-    final double CLAW_SPEED = 0.005;                 // sets rate to move servo
-    private double clawOffset = 0.0;
-    private final double MID_SERVO_claw = 0.5; //Default servo position
+    final double POSITION_CHANGE_RATE = 0.005;                 // sets rate to move servo
+
+    double clawOffset = 0.0;
+    final double MID_SERVO_claw = 0.5; //Default servo position
 
 
-    private double armOffset = 0.0;
-    private final double MID_SERVO_arm = 0.5; //Default servo position
-
-    // The IMU sensor object
-    private BNO055IMU imu;
+    double armOffset = 0.0;
+    final double MID_SERVO_arm = 0.5; //Default servo position
 
     // State used for updating telemetry
-    private Orientation angles;
-    private Acceleration gravity;
+    Orientation angles;
+    Acceleration gravity;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
     @Override
-    public void runOpMode()  throws InterruptedException {
+    public void init() {
 
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
 
-        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
         armServo1 = hardwareMap.servo.get("armServo1");
         armServo2 = hardwareMap.servo.get("armServo2");
         gripperServo1 = hardwareMap.servo.get("gripperServo1");
         gripperServo2 = hardwareMap.servo.get("gripperServo2");
 
-        // Set up the parameters with which we will use our IMU. Note that integration
-        // algorithm here just reports accelerations to the logcat log; it doesn't actually
-        // provide positional information.
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        parameters.loggingEnabled      = false;
 
         // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
         // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
         // and named "imu".
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
-        while (!imu.isGyroCalibrated()) {
-            telemetry.addData("Calibrating IMU Gyro", null);
-            telemetry.update();
-            try {
-                sleep (1000);
-            } catch (Exception e) {}
 
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        telemetry.addData(">", "Initializing IMU parameters");    //
+        telemetry.update();
+        imu.initialize(parameters);
+
+        // Send telemetry message to alert driver that we are calibrating;
+        telemetry.addData(">", "Calibrating IMU");    //
+        telemetry.update();
+
+        // make sure the gyro is calibrated before continuing
+        while (!imu.isGyroCalibrated())  {
+            try {
+                sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            elapsed_time += 100;
+        }
+
+        telemetry.addData(">", "Calibration Time: " + elapsed_time.toString());    //
+        telemetry.update();
+
+        telemetry.addData(">", "Robot Ready.");    //
+        telemetry.update();
+
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         // Set up our telemetry dashboard
         composeTelemetry();
         telemetry.update();
+    }
 
-        waitForStart();
+    @Override
+    public void loop() {
+        motorLeft.setPower(-gamepad1.left_stick_y);
+        motorRight.setPower(-gamepad1.right_stick_y);
 
-        while(opModeIsActive()) {
+        //Moves the arms
+        if (gamepad1.right_bumper)
+            armOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        else if (gamepad1.left_bumper)
+            armOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-            //originally motoLeft direction was reversed above and then stick value negated below
-            //switch right motor reversed so values below don't have to be negated.
-             motorLeft.setPower(gamepad1.left_stick_y);
-             motorRight.setPower(gamepad1.right_stick_y);
+        if (gamepad1.right_trigger > 0)
+            clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        else if (gamepad1.left_trigger > 0)
+            clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
 
-             if (gamepad1.a) {
-                composeTelemetry();
-                telemetry.update();
-            }
-
-            //Moves the arms
-            if (gamepad1.right_bumper)
-                armOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-            else if (gamepad1.left_bumper)
-                armOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-
-            if (gamepad1.right_trigger > 0)
-                clawOffset += Range.clip(POSITION_CHANGE_RATE, -.5, .5);
-            else if (gamepad1.left_trigger > 0)
-                clawOffset -= Range.clip(POSITION_CHANGE_RATE, -.5, .5);
+        if (gamepad1.a) {
+            composeTelemetry();
+            telemetry.update();
         }
+    }
+
+    //@Override
+    public void runOpMode() throws InterruptedException {
+
     }
 
     //----------------------------------------------------------------------------------------------
     // Telemetry Configuration
     //----------------------------------------------------------------------------------------------
 
-    private void composeTelemetry() {
+    void composeTelemetry() {
 
         // At the beginning of each telemetry update, grab a bunch of data
         // from the IMU that we will then display in separate lines.
@@ -157,17 +170,17 @@ public class IMU_Test extends LinearOpMode {
         telemetry.addLine()
                 .addData("heading (Z)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.firstAngle); //Z-Axis (based on get Orientation method parm above
+                        return formatAngle(angles.angleUnit, angles.firstAngle);
                     }
                 })
                 .addData("roll (Y)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.secondAngle); //Y-Axis (based on get Orientation method parm above
+                        return formatAngle(angles.angleUnit, angles.secondAngle);
                     }
                 })
                 .addData("pitch (X)", new Func<String>() {
                     @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.thirdAngle); //X-Axis (based on get Orientation method parm above
+                        return formatAngle(angles.angleUnit, angles.thirdAngle);
                     }
                 });
 
@@ -191,12 +204,14 @@ public class IMU_Test extends LinearOpMode {
     // Formatting
     //----------------------------------------------------------------------------------------------
 
-    private String formatAngle(AngleUnit angleUnit, double angle) {
+    String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
     }
 
-    private String formatDegrees(double degrees){
+    String formatDegrees(double degrees){
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
-
 }
+
+
+

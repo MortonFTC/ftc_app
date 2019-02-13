@@ -58,7 +58,7 @@ public class Teleop2018 extends OpMode {
     public final double ARM_LOWER_POWER = .45;
     public final double ARM_UPPER_POWER = .7;
     public final double BRUSH_SPEED = 1; //TODO
-    public final double DOOR_START_POS = 0.45D;
+    public final double DOOR_START_POS = 0.5D;
     public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
 
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.

@@ -78,16 +78,16 @@ public class HardwareMecanum
     public TouchSensor upperArmLimitSwitch = null;
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
 
-    static final double ARM_LOWER_COUNTS_PER_MOTOR_REV = 1300;    // eg: TETRIX Motor Encoder
-    static final double ARM_LOWER_MOTOR_REVS_PER_SHAFT_REV = 28;
-    static final double WHEELS_COUNTS_PER_SHAFT_REV = 1400;
+    public static final double ARM_LOWER_COUNTS_PER_MOTOR_REV = 1300;    // eg: TETRIX Motor Encoder
+    public static final double ARM_LOWER_MOTOR_REVS_PER_SHAFT_REV = 28;
+    public static final double WHEELS_COUNTS_PER_SHAFT_REV = 1400;
 
-    final int WHEEL_DIAMETER_INCHES = 6;
-    final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_INCHES * Math.PI;
-    final double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
+    public final static int WHEEL_DIAMETER_INCHES = 6;
+    public final static double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_INCHES * Math.PI;
+    public final static double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
 
-    final double FLIPPER_UP_POSITION = .5;
-    final double FLIPPER_DOWN_POSITION = 1;
+    public final static double FLIPPER_UP_POSITION = .5;
+    public final static double FLIPPER_DOWN_POSITION = 1;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;

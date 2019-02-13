@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.year_two;
+package org.firstinspires.ftc.teamcode.year_two.test;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,12 +16,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.opencv.core.Mat;
+import org.firstinspires.ftc.teamcode.year_two.HardwareMecanum;
 
 import java.util.List;
 
 import static java.lang.Math.abs;
-import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
 public class AutonomousMode_JD {
@@ -126,6 +125,16 @@ public class AutonomousMode_JD {
         autonomousClass.telemetry.addData(">", "Robot Ready.");    //
         autonomousClass.telemetry.update();
 
+        int i = 0;
+        while (i < 10) {
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
+            autonomousClass.telemetry.update();
+            sleep(500);
+            i+=1;
+        }
+        targetAngle = angles.firstAngle;
+
         if (position == 9) {
             targetAngle = getRelativeAngle(90.0);
             autonomousClass.telemetry.addData("Turn current...", angles.firstAngle);
@@ -134,7 +143,10 @@ public class AutonomousMode_JD {
             autonomousClass.telemetry.addData("COEFF = ", P_TURN_COEFF);
             autonomousClass.telemetry.update();
             gyroTurn( TURN_SPEED, targetAngle);
-
+        }
+        if (position == 10) {
+            targetAngle = getRelativeAngle(0.0);
+            gyroDrive(DRIVE_SPEED, 48.0, 0.0);
         }
         //This starts autonomous mode where robot begins on CRATER side
         if (position == 2) {
@@ -864,7 +876,7 @@ public class AutonomousMode_JD {
         boolean  onTarget = false ;
         double leftSpeed;
         double rightSpeed;
-        static final double ERROR_THRESHOLD = 20; //angle at which we begin to reduce turning speed
+        final double ERROR_THRESHOLD = 20; //angle at which we begin to reduce turning speed
 
         // determine turn power based on +/- error
         error = getError(angle);

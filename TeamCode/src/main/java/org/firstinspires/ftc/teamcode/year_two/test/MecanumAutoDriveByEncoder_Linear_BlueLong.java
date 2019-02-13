@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.year_two;
+package org.firstinspires.ftc.teamcode.year_two.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -78,7 +78,7 @@ import org.firstinspires.ftc.teamcode.year_two.HardwareMecanum;
 public class MecanumAutoDriveByEncoder_Linear_BlueLong extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwareMecanum         robot   = new HardwareMecanum();   // Use a Mecanum's hardware
+    HardwareMecanum robot   = new HardwareMecanum();   // Use a Mecanum's hardware
     private ElapsedTime     runtime = new ElapsedTime();
 
     public static final double     COUNTS_PER_MOTOR_REV    = 1120;    // eg: TETRIX Motor Encoder
