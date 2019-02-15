@@ -118,7 +118,7 @@ public class AutonomousMode_JD {
             sleep(50);
             autonomousClass.idle();
         }
-/
+
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         targetAngle = angles.firstAngle;
 
@@ -126,13 +126,15 @@ public class AutonomousMode_JD {
         autonomousClass.telemetry.addData("Angle Z/Y/X", "%5.2f/%5.2f/%5.2f", angles.firstAngle, angles.secondAngle, angles.thirdAngle);
         autonomousClass.telemetry.update();
 
-        int i = 0;
-        while (i < 10) {
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
-            autonomousClass.telemetry.update();
-            sleep(500);
-            i+=1;
+        if (position == 9 || position == 10) {
+            int i = 0;
+            while (i < 10) {
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
+                autonomousClass.telemetry.update();
+                sleep(500);
+                i += 1;
+            }
         }
         targetAngle = angles.firstAngle;
 
@@ -729,7 +731,7 @@ public class AutonomousMode_JD {
         double  steer;
         double  leftSpeed;
         double  rightSpeed;
-        final double CRCTN_FACTOR = 0.05;
+        final double CRCTN_FACTOR = 0.08;
 
         // Ensure that the opmode is still active
         if (autonomousClass.opModeIsActive()) {
@@ -799,10 +801,10 @@ public class AutonomousMode_JD {
                     leftSpeed = speed;
                     rightSpeed = speed * steer;
                 }
-                autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
-                autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
+                //autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
+                //autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
+                autonomousClass.telemetry.addData("Angle/Left/Right...", "%5.2f/%4.2f/%4.2f", angles.firstAngle, leftSpeed,rightSpeed);
                 autonomousClass.telemetry.update();
-
                 // Normalize speeds if either one exceeds +/- 1.0;
                 //max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
                 //if (max > 1.0)
