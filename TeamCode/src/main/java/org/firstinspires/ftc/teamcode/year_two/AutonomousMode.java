@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -27,7 +28,8 @@ public class AutonomousMode {
     HardwareMap hwMap;
 
     Orientation lastAngles = new Orientation();
-    double globalAngle;
+    Orientation originalAngle = new Orientation();
+    double globalAngle, power = .30, correction;
 
     private static final String VUFORIA_KEY = "AeWrHWf/////AAAAmZG3057lc0JXoVs+HjtHkjZyYL2/IQH4DPGcMKxDXU12F688beSRkSeE6Oz1nH1imNIbBvdwCWFtpqBTu9aqKnlQ9XE3cDLcuUa6/iv0yK3oKy/4p+C1KqltmtvLTda0rgoW8mVcohX38181Apke+iCMjogFT0FHT+3o36MrhYRT03H7Al4Ynqd09uLIGiCXwffq0Ws+YJvWbgbw3Upvjn+Rpbh/xUckxiqFFfU/5j5uCdjMFvUn3YLrLelYAKsaKLKTfMy+OeMbv8wd9By4EjM+A9RB7HKVv3pNZX8fOD9MuSh8y9zV+ZZi+EzcAzJehi9M4mLq7qAmjUgs4qOvtafr6L2dav8Vfw8TarFoD1mk";
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -63,6 +65,28 @@ public class AutonomousMode {
 
         //robot.leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+        robot.imu.initialize(parameters);
+
+        autonomousClass.telemetry.addData("Mode", "calibrating...");
+        autonomousClass.telemetry.update();
+
+        // make sure the imu gyro is calibrated before continuing.
+        while (!autonomousClass.isStopRequested() && !robot.imu.isGyroCalibrated()) {
+            sleep(50);
+            autonomousClass.idle();
+        }
+
+        autonomousClass.telemetry.addData("Mode", "waiting for start");
+        autonomousClass.telemetry.addData("imu calib status", robot.imu.getCalibrationStatus().toString());
+        autonomousClass.telemetry.update();
 
         autonomousClass.waitForStart();
 
@@ -336,6 +360,75 @@ public class AutonomousMode {
 
             encoderDrive(.5, -62,-62,10, false);
 
+        }
+
+        if (position == 10)
+        {
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+
+            robot.armLower.setPower(.5);
+            Thread.sleep(3250);
+            originalAngle = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            Thread.sleep(250);
+
+            encoderCrabsteer(0, 3.5, .5);
+            sleep(5000);
+
+            encoderDrive(.3, 16, 16, 10, false);
+            sleep(500);
+
+            //rotate((Math.round((originalAngle.firstAngle + 90) - robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle)), .5);
+            rotate(90, .5);
+            sleep(500); //TODO Take out?
+
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
+
+            encoderDrive(.3, -24, -24, 10, false);
+            sleep(500);
+
+            autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
+            autonomousClass.telemetry.update();
+
+            int targetPos = encoderDrive(.5, 68, 68, 10, true);
+
+            autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
+            autonomousClass.telemetry.update();
+
+            rotate(-100, .5);
+            sleep(250);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
+            robot.armLower.setPower(1);
+
+            encoderDrive(.7, 47,47, 10, false);
+            sleep(500);
+
+            robot.door.setPosition(DOOR_OPEN_POS);
+            sleep(700);
+
+            rotate(10, .5);
+
+            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            encoderDrive(.5, -62,-62,10, false);
         }
 
         if (position == 0) {
@@ -683,7 +776,8 @@ public class AutonomousMode {
         sleep(1000);
     }
 
-    private double getAngle() {
+    private double getAngle()
+    {
         // We experimentally determined the Z axis is the axis we want to use for heading angle.
         // We have to process the angle because the imu works in euler angles so the Z axis is
         // returned as 0 to +180 or 0 to -180 rolling back to -179 or +179 when rotation passes
@@ -705,90 +799,81 @@ public class AutonomousMode {
         return globalAngle;
     }
 
-    /**
-     * See if we are moving in a straight line and if not return a power correction value.
-     *
-     * @return Power adjustment, + is adjust left - is adjust right.
-     */
-    private double checkDirection() {
-        // The gain value determines how sensitive the correction is to direction changes.
-        // You will have to experiment with your robot to get small smooth direction changes
-        // to stay on a straight line.
-        double correction, angle, gain = .10;
-
-        angle = getAngle();
-
-        if (angle == 0)
-            correction = 0;             // no adjustment.
-        else
-            correction = -angle;        // reverse sign of angle for correction.
-
-        correction = correction * gain;
-
-        return correction;
+    private double getRelativeAngle()
+    {
+        return robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle - originalAngle.firstAngle;
     }
 
-    /**
-     * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
-     *
-     * @param degrees Degrees to turn, + is left - is right
-     */
-    private void rotate(int degrees, double power) throws InterruptedException {
-        double leftPower, rightPower;
+    private void rotate(int degrees, double power)
+    {
+        robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        double  actualDegrees;
+
+        if (degrees > 0)
+        {
+            actualDegrees = degrees -15;
+        }
+        else
+        {
+            actualDegrees = degrees + 15;
+        }
+
+        double  leftPower, rightPower;
         // restart imu movement tracking.
         resetAngle();
 
         // getAngle() returns + when rotating counter clockwise (left) and - when rotating
         // clockwise (right).
 
-        if (degrees < 0) {   // turn right.
+        if (actualDegrees < 0)
+        {   // turn right.
             leftPower = -power;
-            rightPower = power;
-        } else if (degrees > 0) {   // turn left.
-            leftPower = power;
             rightPower = -power;
-        } else return;
+        }
+        else if (actualDegrees > 0)
+        {   // turn left.
+            leftPower = power;
+            rightPower = power;
+        }
+        else return;
 
         // set power to rotate.
-
-        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         robot.leftFrontDrive.setPower(leftPower);
-        robot.leftFrontDrive.setPower(leftPower);
+        robot.leftRearDrive.setPower(leftPower);
 
         robot.rightFrontDrive.setPower(rightPower);
         robot.rightRearDrive.setPower(rightPower);
 
         // rotate until turn is completed.
-        if (degrees < 0) {
+        if (actualDegrees < 0)
+        {
             // On right turn we have to get off zero first.
-            while (autonomousClass.opModeIsActive() && getAngle() == 0) {
-            }
+            while (autonomousClass.opModeIsActive() && getAngle() == 0) {}
 
-            while (autonomousClass.opModeIsActive() && getAngle() > degrees) {
-            }
-        } else    // left turn.
-            while (autonomousClass.opModeIsActive() && getAngle() < degrees) {
-            }
+            while (autonomousClass.opModeIsActive() && getAngle() > actualDegrees) {}
+        }
+        else    // left turn.
+            while (autonomousClass.opModeIsActive() && getAngle() < actualDegrees) {}
 
+        // turn the motors off.
         robot.rightFrontDrive.setPower(0);
         robot.rightRearDrive.setPower(0);
         robot.leftFrontDrive.setPower(0);
         robot.leftRearDrive.setPower(0);
 
-
         // wait for rotation to stop.
-        sleep(1000);
+        autonomousClass.sleep(1000);
 
         // reset angle tracking on new heading.
         resetAngle();
     }
 
-    private void resetAngle() {
+    private void resetAngle()
+    {
         lastAngles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         globalAngle = 0;
@@ -813,39 +898,6 @@ public class AutonomousMode {
             }
         }
         return false;
-    }
-
-    public void unhook() {
-        autonomousClass.telemetry.addData("Still running", 1);
-        autonomousClass.telemetry.update();
-        robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 300);
-        robot.armLower.setPower(-1);
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        autonomousClass.telemetry.addData("Still running", 2);
-        autonomousClass.telemetry.update();
-        //robot.hookServo.setPosition(0.2);
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        autonomousClass.telemetry.addData("Still running", 3);
-        autonomousClass.telemetry.update();
-        robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 9000);
-        robot.armLower.setPower(1);
-        autonomousClass.telemetry.addData("Still running", 4);
-        autonomousClass.telemetry.update();
-        //crabSteer(1, 500, .5);
     }
 
     public void pushMineral(int position) throws InterruptedException {

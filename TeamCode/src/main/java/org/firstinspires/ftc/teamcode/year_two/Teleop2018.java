@@ -264,9 +264,9 @@ public class Teleop2018 extends OpMode {
 
         //Activating the brushes.
         if (g_trigger_right > 0)
-            robot.brush.setPower(BRUSH_SPEED);
-        else if (g_trigger_left > 0) //Reverse
             robot.brush.setPower(-BRUSH_SPEED);
+        else if (g_trigger_left > 0) //Reverse
+            robot.brush.setPower(BRUSH_SPEED);
         else robot.brush.setPower(0);
 
         if (g_bumper_right) {
