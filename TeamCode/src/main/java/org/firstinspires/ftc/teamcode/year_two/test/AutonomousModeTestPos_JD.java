@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name="Autonomous Test Pos_JD", group="Auto")
-@Disabled
+//@Disabled
 public class AutonomousModeTestPos_JD extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
