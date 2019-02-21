@@ -122,21 +122,24 @@ public class AutonomousMode_JD {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         targetAngle = angles.firstAngle;
 
-        autonomousClass.telemetry.addData(">", "Robot Ready.");    //
+        autonomousClass.telemetry.addData(">", "Robot Ready.");
+        autonomousClass.telemetry.addData("Angle Z/Y/X", "%5.2f/%5.2f/%5.2f", angles.firstAngle, angles.secondAngle, angles.thirdAngle);
         autonomousClass.telemetry.update();
 
-        int i = 0;
-        while (i < 10) {
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
-            autonomousClass.telemetry.update();
-            sleep(500);
-            i+=1;
+        if (position == 9 || position == 10) {
+            int i = 0;
+            while (i < 10) {
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
+                autonomousClass.telemetry.update();
+                sleep(500);
+                i += 1;
+            }
         }
         targetAngle = angles.firstAngle;
 
         if (position == 9) {
-            targetAngle = getRelativeAngle(90.0);
+            targetAngle = getAbsoluteAngle(90.0);
             autonomousClass.telemetry.addData("Turn current...", angles.firstAngle);
             autonomousClass.telemetry.addData("     new.......", targetAngle);
             autonomousClass.telemetry.addData("Speed = ", TURN_SPEED);
@@ -145,7 +148,7 @@ public class AutonomousMode_JD {
             gyroTurn( TURN_SPEED, targetAngle);
         }
         if (position == 10) {
-            targetAngle = getRelativeAngle(0.0);
+            //targetAngle = getAbsoluteAngle(0.0);
             gyroDrive(DRIVE_SPEED, 48.0, 0.0);
         }
         //This starts autonomous mode where robot begins on CRATER side
@@ -160,10 +163,12 @@ public class AutonomousMode_JD {
             encoderCrabsteer(0, 3.5, .5);
             sleep(500);
 
-            encoderDrive(.3, 14, 14, 10, false);
+            //encoderDrive(.3, 14, 14, 10, false);
+            gyroDrive(0.3,14,0);
             sleep(500);
 
-            encoderDrive(.3, -19, 19, 10, false);
+            //encoderDrive(.3, -19, 19, 10, false);
+            gyroTurn(0.3, 90.0);
             sleep(500);
 
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -178,7 +183,8 @@ public class AutonomousMode_JD {
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
             robot.armLower.setPower(.3);
 
-            encoderDrive(.3, -24, -24, 10, false);
+            //encoderDrive(.3, -24, -24, 10, false);
+            gyroDrive(0.3,-24.0,90);
             sleep(500);
 
             autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
@@ -188,7 +194,10 @@ public class AutonomousMode_JD {
 
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
-            encoderDrive(.3, -7.0,7.0,10, false);
+            //encoderDrive(.3, -7.0,7.0,10, false);
+            //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            //targetAngle = angles.firstAngle;
+            gyroTurn(0.3, 135.0);
             sleep(500);
 
             robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -197,21 +206,23 @@ public class AutonomousMode_JD {
             robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
             robot.armLower.setPower(1);
 
-            encoderDrive(.7, 36,36, 10, false);
+            //encoderDrive(.7, 36,36, 10, false);
+            gyroDrive(0.3,36.0, 135.0);
             sleep(500);
 
             robot.door.setPosition(DOOR_OPEN_POS);
             sleep(700);
 
-            encoderDrive(.3, -3, 3, 10, false); //TODO Was 1.5
-            sleep(250);
+            //encoderDrive(.3, -3, 3, 10, false); //TODO Was 1.5
+            //sleep(250);
 
             robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            encoderDrive(.5, -68,-68, 10, false);
+            //encoderDrive(.5, -68,-68, 10, false);
+            gyroDrive(0.3, -68, 135);
         }
 
         //This begins autonomous mode where robot begins on DEPOT side
@@ -286,10 +297,10 @@ public class AutonomousMode_JD {
     /**
      * The gyroDrive, gryoTurn, and gyroHold methods receive an absolute angle value.
      * For most movements, we will want to move the robot +/- a number of degress from
-     * current location.  This method takes 2 values:  (1) the currentAngle; (2) the desired # of degrees
+     * current location.  This method takes 2 values:  (1) the targetAngle; (2) the desired # of degrees
      * to move and will return the correct absolute position to pass to the gyro functions.
      */
-    public double getRelativeAngle (double moveAngle) {
+    public double getAbsoluteAngle (double moveAngle) {
         double newAngle;
         newAngle = targetAngle + moveAngle;
         if (newAngle > 180)  newAngle -= 360;
@@ -720,7 +731,7 @@ public class AutonomousMode_JD {
         double  steer;
         double  leftSpeed;
         double  rightSpeed;
-        final double CRCTN_FACTOR = 0.05;
+        final double CRCTN_FACTOR = 0.08;
 
         // Ensure that the opmode is still active
         if (autonomousClass.opModeIsActive()) {
@@ -790,10 +801,10 @@ public class AutonomousMode_JD {
                     leftSpeed = speed;
                     rightSpeed = speed * steer;
                 }
-                autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
-                autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
+                //autonomousClass.telemetry.addData("Left Speed = ", leftSpeed);
+                //autonomousClass.telemetry.addData("Right Speed = ", rightSpeed);
+                autonomousClass.telemetry.addData("Angle/Left/Right...", "%5.2f/%4.2f/%4.2f", angles.firstAngle, leftSpeed,rightSpeed);
                 autonomousClass.telemetry.update();
-
                 // Normalize speeds if either one exceeds +/- 1.0;
                 //max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
                 //if (max > 1.0)
