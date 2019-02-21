@@ -135,139 +135,6 @@ public class AutonomousMode {
             autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
             autonomousClass.telemetry.update();
 
-            /*boolean goldSpotted = false;
-            int goldSpottedCount = 0;
-
-            while (goldMineralIsPresent())
-            {
-                robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                sleep(500);
-                robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                break;
-            }
-            */
-            /*
-            while (robot.rightFrontDrive.getCurrentPosition() > targetPos)
-            {
-                autonomousClass.telemetry.addData("This was updated.", "Yes.");
-                if (goldMineralIsPresent() && !goldSpotted)
-                {
-                    goldSpotted = true;
-                    goldSpottedCount = robot.rightFrontDrive.getCurrentPosition();
-                }
-
-                if (goldSpotted)
-                {
-                    if (robot.rightFrontDrive.getCurrentPosition() > goldSpottedCount + 2000)
-                    {
-                        robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    }
-                    else
-                    {
-                        robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                    }
-                }
-            }
-
-            */
-
-            /*
-            long startTime = System.currentTimeMillis();
-            boolean goldDetected = false;
-            long armOutTime = 0;
-            boolean armRetracted = false; //TODO
-            boolean armOut = false;
-
-            encoderDrive(.3, -17, -17, 10);
-            sleep(2000);
-
-            encoderDrive(.05, 37,37,10);
-
-            while (System.currentTimeMillis() < startTime + 10000)
-            {
-                if (goldDetected == false) {
-                    if (goldMineralIsPresent()) {
-                        goldDetected = true;
-                        armOutTime = System.currentTimeMillis();
-                        armOut = true;
-                    }
-
-                    if (goldDetected == true && armOutTime != 0 && armRetracted == false) {
-                        if (System.currentTimeMillis() > armOutTime + 2000) {
-                            armOut = false;
-                        }
-                    }
-                }
-                autonomousClass.telemetry.addData("arm out?", armOut);
-                autonomousClass.telemetry.update();
-            }
-            */
-
-            /*
-            encoderDrive(.3, -5, -5, 10);
-            sleep(500);
-
-            if (goldMineralIsPresent()) {
-                //extend flipper servo
-                goldMineralPosition = 2;
-
-                robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                sleep(250);
-
-                encoderDrive(.3, 5, 5, 10);
-                sleep(1000);
-                //retract flipper servo
-                robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                sleep(250);
-                autonomousClass.telemetry.addData("Flipper extending.", "byebye");
-                autonomousClass.telemetry.update();
-                encoderDrive(.3, 15, 15, 10);
-                sleep(1000);
-            }
-            else {
-                encoderDrive(.3, -15, -15, 10);
-                sleep(1000);
-
-                if (goldMineralIsPresent()) {
-                    goldMineralPosition = 3;
-                    //extend flipper servo
-                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    sleep(250);
-                    autonomousClass.telemetry.addData("Flipper extending.", "Yeah genius, it's working.");
-                    autonomousClass.telemetry.update();
-                    encoderDrive(.3, 5, 5, 10);
-                    sleep(1000);
-                    //retract flipper servo
-                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                    sleep(250);
-                    autonomousClass.telemetry.addData("Flipper extending.", "bye felicia");
-                    autonomousClass.telemetry.update();
-                    encoderDrive(.3, 30, 30, 10);
-                    sleep(3000);
-                }
-                else {
-                    goldMineralPosition = 1;
-                    encoderDrive(.3, 25, 25,  10);
-                    sleep(2000);
-                    //extend flipper servo
-                    robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    sleep(250);
-                    autonomousClass.telemetry.addData("Flipper extending.", "yup... pretty cool.");
-                    autonomousClass.telemetry.update();
-                    encoderDrive(.3, 10,10, 10);
-                    sleep(1000);
-                    //retract flipper servo
-                    robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
-                    sleep(250);
-                    autonomousClass.telemetry.addData("Flipper extending.", "were over");
-                    autonomousClass.telemetry.update();
-                }
-            }
-            */
-
-            //encoderDrive(.3, 25,25,10, false);
-            //sleep(1500);
-
             encoderDrive(.3, -7.0,7.0,10, false);
             sleep(500);
 
@@ -362,73 +229,90 @@ public class AutonomousMode {
 
         }
 
-        if (position == 10)
-        {
+        if (position == 1) {
+
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
+            autonomousClass.telemetry.update();
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
 
             robot.armLower.setPower(.5);
-            Thread.sleep(3250);
-            originalAngle = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            Thread.sleep(250);
+            Thread.sleep(3500);
+
+            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
+            autonomousClass.telemetry.update();
 
             encoderCrabsteer(0, 3.5, .5);
-            sleep(5000);
 
-            encoderDrive(.3, 16, 16, 10, false);
+            //TODO Reset lower arm encoders
+
+
+            encoderDrive(.3, 15, 15, 10, false);
             sleep(500);
 
-            //rotate((Math.round((originalAngle.firstAngle + 90) - robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle)), .5);
-            rotate(90, .5);
-            sleep(500); //TODO Take out?
-
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
-            robot.armUpper.setPower(.3);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
 
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armLower.setPower(.2);
+            robot.armUpper.setPower(1);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
-            robot.armLower.setPower(.3);
+            encoderCrabsteer(1, 20, .3);
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
+                goldMineralPosition = 1;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
+                pushMineral(1);
+            }
 
-            encoderDrive(.3, -24, -24, 10, false);
-            sleep(500);
+            encoderCrabsteer(0, 20, .3);
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
+                goldMineralPosition = 2;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
 
-            autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
-            autonomousClass.telemetry.update();
+                pushMineral(2);
+            }
 
-            int targetPos = encoderDrive(.5, 68, 68, 10, true);
+            encoderCrabsteer(0, 20, .3);
+            sleep(2000);
+            if (goldMineralIsPresent() && !positionDecided) {
+                goldMineralPosition = 3;
+                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
+                autonomousClass.telemetry.update();
 
-            autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
-            autonomousClass.telemetry.update();
+                pushMineral(3);
+            }
 
-            rotate(-100, .5);
+            if (positionDecided == false) {
+
+            }
+
+            encoderCrabsteer(0, 34, .3);
+            sleep(2500);
+            encoderDrive(.3, 8.5, -8.5, 10, false); //Turn parallel to wall.
             sleep(250);
 
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            encoderDrive(.6, 48.5, 48.5, 20, false);
+            sleep(2000);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
-            robot.armLower.setPower(1);
+            robot.door.setPosition(.45D + 90/280.0);
+            sleep(1500);
+            robot.door.setPosition(.45D);
 
-            encoderDrive(.7, 47,47, 10, false);
-            sleep(500);
+            //TODO Place marker
 
-            robot.door.setPosition(DOOR_OPEN_POS);
-            sleep(700);
-
-            rotate(10, .5);
-
-            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            encoderDrive(.5, -62,-62,10, false);
+            encoderDrive(.6, -82, -82, 20, false);
+            sleep(2500);
         }
 
         if (position == 0) {
@@ -531,90 +415,136 @@ public class AutonomousMode {
             sleep(2500);
             */
         }
-        if (position == 1) {
 
+        if (position == 10)
+        {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6300);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
 
-            autonomousClass.telemetry.addData("currentPos", robot.armLower.getCurrentPosition());
-            autonomousClass.telemetry.update();
-
             encoderCrabsteer(0, 3.5, .5);
-
-            //TODO Reset lower arm encoders
-
-
-            encoderDrive(.3, 15, 15, 10, false);
             sleep(500);
 
-            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            encoderDrive(.3, 14, 14, 10, false);
+            sleep(500);
 
-            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //rotate((Math.round((originalAngle.firstAngle + 90) - robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle)), .5);
+            rotate(85, .4);
+
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5800);
-            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 20000);
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
 
-            robot.armLower.setPower(.2);
-            robot.armUpper.setPower(1);
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            encoderCrabsteer(1, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 1;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
-                pushMineral(1);
-            }
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
 
-            encoderCrabsteer(0, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 2;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
+            encoderDrive(.3, -25, -25, 10, false);
+            sleep(500);
 
-                pushMineral(2);
-            }
+            autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
+            autonomousClass.telemetry.update();
 
-            encoderCrabsteer(0, 20, .3);
-            sleep(2000);
-            if (goldMineralIsPresent() && !positionDecided) {
-                goldMineralPosition = 3;
-                autonomousClass.telemetry.addData("mineralPosition", goldMineralPosition);
-                autonomousClass.telemetry.update();
+            int targetPos = encoderDrive(.5, 68, 68, 10, true);
 
-                pushMineral(3);
-            }
+            autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
+            autonomousClass.telemetry.update();
 
-            if (positionDecided == false) {
+            rotate(-100, .4);
 
-            }
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            encoderCrabsteer(0, 34, .3);
-            sleep(2500);
-            encoderDrive(.3, 8.5, -8.5, 10, false); //Turn parallel to wall.
-            sleep(250);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
+            robot.armLower.setPower(1);
 
-            encoderDrive(.6, 48.5, 48.5, 20, false);
-            sleep(2000);
+            encoderDrive(.8, 47,47, 10, false);
+            sleep(500);
 
-            robot.door.setPosition(.45D + 90/280.0);
-            sleep(1500);
-            robot.door.setPosition(.45D);
+            robot.door.setPosition(DOOR_OPEN_POS);
+            sleep(500);
 
-            //TODO Place marker
+            rotate(10, .4);
 
-            encoderDrive(.6, -82, -82, 20, false);
-            sleep(2500);
+            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            encoderDrive(.8, -62,-62,10, false);
+        }
+
+
+        if (position == 11)
+        {
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+
+            robot.armLower.setPower(.5);
+            Thread.sleep(3500);
+
+            encoderCrabsteer(0, 3.5, .5);
+            sleep(500);
+
+            encoderDrive(.3, 14, 14, 10, false);
+            sleep(500);
+
+            rotate(85, .4);
+
+            robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armUpper.setTargetPosition(robot.armUpper.getCurrentPosition() - 10750);
+            robot.armUpper.setPower(.3);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 1250);
+            robot.armLower.setPower(.3);
+
+            encoderDrive(.3, -25, -25, 10, false);
+            sleep(500);
+
+            autonomousClass.telemetry.addData("Starting Drive Forward 40 Inches", null);
+            autonomousClass.telemetry.update();
+
+            int targetPos = encoderDrive(.5, 68, 68, 10, true);
+
+            autonomousClass.telemetry.addData("Start Checking for Gold Mineral", null);
+            autonomousClass.telemetry.update();
+
+            rotate(25, .4);
+
+            robot.armLower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - 5950);
+            robot.armLower.setPower(1);
+
+            encoderDrive(.8, 36,36, 10, false);
+            sleep(500);
+
+            robot.door.setPosition(DOOR_OPEN_POS);
+            sleep(500);
+
+            rotate(20, .4);
+
+            robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            robot.rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            encoderDrive(.8, -68,-68, 10, false);
+
         }
     }
 
@@ -678,7 +608,7 @@ public class AutonomousMode {
 
             boolean goldMineralFound = false;
             double firstInches = startingPos + (4 * robot.COUNTS_PER_INCH);
-            double dropArmByPos = startingPos + (31.5 * robot.COUNTS_PER_INCH);
+            double dropArmByPos = startingPos + (34.5 * robot.COUNTS_PER_INCH);
 
             while (autonomousClass.opModeIsActive() &&
                     (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() &&
@@ -866,7 +796,7 @@ public class AutonomousMode {
         robot.leftRearDrive.setPower(0);
 
         // wait for rotation to stop.
-        autonomousClass.sleep(1000);
+        autonomousClass.sleep(500);
 
         // reset angle tracking on new heading.
         resetAngle();

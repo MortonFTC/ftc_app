@@ -82,6 +82,7 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
+@Disabled
 @Autonomous(name="Lamguana_Autonomous", group="Lamguana")
 //@Disabled
 public class Lamguana_Autonomous extends LinearOpMode {

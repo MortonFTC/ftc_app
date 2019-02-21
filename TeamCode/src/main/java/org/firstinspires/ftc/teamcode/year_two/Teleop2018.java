@@ -61,6 +61,8 @@ public class Teleop2018 extends OpMode {
     public final double DOOR_START_POS = 0.5D;
     public final double DOOR_OPEN_POS = DOOR_START_POS + 90/280.0;
 
+    boolean flipperActivated = false;
+
     public int armLowerOffset = 0; //This is the offset from the starting position of the motor, in units of encoder counts.
     //public boolean doorClosed = true;
 
@@ -97,6 +99,7 @@ public class Teleop2018 extends OpMode {
 
     @Override
     public void loop() {
+
         // pilot controller variables
         double p_left_y; // forward/reverse (left side)
         double p_right_y; // forward/reverse (right side)
@@ -274,6 +277,21 @@ public class Teleop2018 extends OpMode {
         }
         else {
             robot.door.setPosition(DOOR_START_POS);
+        }
+
+        if (g_button_x) {
+            robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
+            flipperActivated = true;
+        }
+        else if (g_button_y) {
+            robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
+            flipperActivated = true;
+            telemetry.addData("Flipper", robot.FLIPPER_DOWN_POSITION);
+            telemetry.update();
+        }
+
+        if (!flipperActivated) {
+            robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
         }
     }
 

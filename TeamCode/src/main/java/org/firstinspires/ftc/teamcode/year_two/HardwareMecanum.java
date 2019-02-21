@@ -87,7 +87,7 @@ public class HardwareMecanum
     public final static double COUNTS_PER_INCH = WHEELS_COUNTS_PER_SHAFT_REV / WHEEL_CIRCUMFERENCE;
 
     public final static double FLIPPER_UP_POSITION = .5;
-    public final static double FLIPPER_DOWN_POSITION = 1;
+    public final static double FLIPPER_DOWN_POSITION = .87;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
