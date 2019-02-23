@@ -226,7 +226,7 @@ public class Teleop2018 extends OpMode {
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() - ARM_RATE_OF_CHANGE);
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() - ARM_RATE_OF_CHANGE);
                 //armLowerOffset -= ARM_RATE_OF_CHANGE;
-                robot.armLower.setPower(g_left_y * .7);
+                robot.armLower.setPower(g_left_y);
                 telemetry.addData("EncoderPosition", robot.armLower.getCurrentPosition());
                 telemetry.update();
             }
@@ -234,7 +234,8 @@ public class Teleop2018 extends OpMode {
                 //robot.armLowerLeft.setTargetPosition(robot.armLowerLeft.getCurrentPosition() + ARM_RATE_OF_CHANGE); //(1800 * 28) / 150 loops per second / 12 = 12 seconds for full arm rotation.
                 //robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + ARM_RATE_OF_CHANGE);
                 //armLowerOffset += ARM_RATE_OF_CHANGE;
-                robot.armLower.setPower(g_left_y * .7);
+                robot.armLower.setPower(g_left_y);
+                telemetry.addData("controller", g_left_y);
                 telemetry.addData("EncoderPosition", robot.armLower.getCurrentPosition());
                 telemetry.update();
             }

@@ -416,11 +416,11 @@ public class AutonomousMode {
             */
         }
 
-        if (position == 10)
+        if (position == 10) //Depot
         {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 5500);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
@@ -428,11 +428,11 @@ public class AutonomousMode {
             encoderCrabsteer(0, 3.5, .5);
             sleep(500);
 
-            encoderDrive(.3, 14, 14, 10, false);
+            encoderDrive(.3, 15, 15, 10, false);
             sleep(500);
 
             //rotate((Math.round((originalAngle.firstAngle + 90) - robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle)), .5);
-            rotate(85, .4);
+            rotate(90, .4);
 
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -486,7 +486,7 @@ public class AutonomousMode {
         {
             robot.armLower.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 6000);
+            robot.armLower.setTargetPosition(robot.armLower.getCurrentPosition() + 5500);
 
             robot.armLower.setPower(.5);
             Thread.sleep(3500);
@@ -494,10 +494,10 @@ public class AutonomousMode {
             encoderCrabsteer(0, 3.5, .5);
             sleep(500);
 
-            encoderDrive(.3, 14, 14, 10, false);
+            encoderDrive(.3, 15, 15, 10, false);
             sleep(500);
 
-            rotate(85, .4);
+            rotate(90, .4);
 
             robot.armUpper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             robot.armUpper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -555,7 +555,7 @@ public class AutonomousMode {
     public int encoderDrive (double speed,
                              double leftInches, double rightInches,
                              double timeoutS,
-                             boolean checkMinerals) throws InterruptedException {
+                             boolean checkMinerals) throws InterruptedException { //All mineral detection stuff here
         int newLeftFrontTarget;
         int newRightFrontTarget;
         int newLeftRearTarget;
@@ -608,7 +608,7 @@ public class AutonomousMode {
 
             boolean goldMineralFound = false;
             double firstInches = startingPos + (4 * robot.COUNTS_PER_INCH);
-            double dropArmByPos = startingPos + (34.5 * robot.COUNTS_PER_INCH);
+            double dropArmByPos = startingPos + (34 * robot.COUNTS_PER_INCH);
 
             while (autonomousClass.opModeIsActive() &&
                     (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() &&
@@ -629,7 +629,7 @@ public class AutonomousMode {
                 {
                     goldMineralFound = true;
                     robot.flipperServo.setPosition(robot.FLIPPER_DOWN_POSITION);
-                    int time = 2250;
+                    int time = 2750;
                     if (robot.rightFrontDrive.getCurrentPosition() < firstInches)
                     {
                         time = 3000;
