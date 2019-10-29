@@ -1,21 +1,22 @@
 package org.firstinspires.ftc.teamcode.year_two.test;
 
+/*
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.DogeCVDetector;
 import com.disnodeteam.dogecv.detectors.roverrukus.SilverDetector;
+import org.opencv.core.Size;
+*/
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.opencv.core.Size;
 
 @TeleOp(name = "DogeCV Test", group = "Concept")
 @Disabled
 public class DogeCVTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        telemetry.addData("Status", "DogeCV 2018.0 - Gold SilverDetector Example");
+/*        telemetry.addData("Status", "DogeCV 2018.0 - Gold SilverDetector Example");
 
         SilverDetector detector = new SilverDetector();
 
@@ -35,5 +36,6 @@ public class DogeCVTest extends LinearOpMode {
         detector.ratioScorer.weight = 5;
         detector.ratioScorer.perfectRatio = 1.0;
         detector.enable(); // Start detector
+    */
     }
 }

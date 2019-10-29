@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.year_two;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -48,7 +49,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 //@Disabled
 @TeleOp(name="Teleop 2018", group="Manual")
-
+@Disabled
 public class Teleop2018 extends OpMode {
 
     HardwareMecanum robot = new HardwareMecanum();
