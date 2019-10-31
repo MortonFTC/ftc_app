@@ -41,8 +41,8 @@ public class AutonomousMode_JD {
 
     // These constants define the desired driving/control characteristics
     // The can/should be tweaked to suite the specific robot drive train.
-    static final double     DRIVE_SPEED             = 0.3;     // Nominal speed for better accuracy.
-    static final double     TURN_SPEED              = 0.3;     // Nominal half speed for better accuracy.
+    static final double     DRIVE_SPEED             = 0.75;     // Nominal speed for better accuracy.
+    static final double     TURN_SPEED              = 0.75;     // Nominal half speed for better accuracy.
 
     static final double     HEADING_THRESHOLD       = 1;      // As tight as we can make it with an integer gyro
 
@@ -127,14 +127,14 @@ public class AutonomousMode_JD {
                 autonomousClass.telemetry.addData("Angle = ", angles.firstAngle);
                 autonomousClass.telemetry.addData("i = ", i);
                 autonomousClass.telemetry.update();
-                sleep(500);
+                sleep(100);
                 i += 1;
             }
         }
         targetAngle = angles.firstAngle;
 
         if (position == 9) {
-            targetAngle = getAbsoluteAngle(90.0);
+            targetAngle = getAbsoluteAngle(-90.0);
             autonomousClass.telemetry.addData("Turn current...", angles.firstAngle);
             autonomousClass.telemetry.addData("     new.......", targetAngle);
             autonomousClass.telemetry.addData("Speed = ", TURN_SPEED);
@@ -142,6 +142,11 @@ public class AutonomousMode_JD {
             autonomousClass.telemetry.update();
             sleep(1000);
             gyroTurn( TURN_SPEED, targetAngle);
+            sleep(2000);
+            autonomousClass.telemetry.addData("Angle", "%5.2f", angles.firstAngle);
+            autonomousClass.telemetry.update();
+            sleep(2000 );
+
         }
         if (position == 10) {
             //targetAngle = getAbsoluteAngle(0.0);
@@ -499,8 +504,8 @@ public class AutonomousMode_JD {
         boolean  onTarget = false ;
         double leftSpeed;
         double rightSpeed;
-        final double ERROR_THRESHOLD = 20; //angle at which we begin to reduce turning speed
-        final double MAX_SPEED = 30.0;
+        final double ERROR_THRESHOLD = 40; //angle at which we begin to reduce turning speed
+        final double MAX_SPEED = 0.75;
 
         // determine turn power based on +/- error
         error = getError(angle);
@@ -524,25 +529,27 @@ public class AutonomousMode_JD {
             // divide the ERROR_THRESHOLD into quartiles to reduce speed as we near our heading
             // for each quartile, we will reduce speed by power of 2
 
-            if (error <= ERROR_THRESHOLD * 0.25)
+            if (abs(error) <= ERROR_THRESHOLD * 0.25)
                 //speed = speed / Math.pow(2, 4);
-                speed = speed / 8;
-            else if (error <= ERROR_THRESHOLD * 0.50)
+                //speed = speed / 4;
+                speed = (speed > 0) ? .1 : -.1;
+            else if (abs(error) <= ERROR_THRESHOLD * 0.50)
                 //speed = speed / Math.pow(2, 3);
-                speed = speed / 6;
-            else  if (error <= ERROR_THRESHOLD * 0.75)
+                //speed = speed / 3;
+                speed = (speed > 0) ? .15 : -.15;
+            else  if (abs(error) <= ERROR_THRESHOLD * 0.75)
                 //speed = speed / Math.pow(2, 2);
-                speed = speed / 4;
-            else if (error <= ERROR_THRESHOLD)
+                speed = (speed > 0) ? .20 : -.20;
+            else if (abs(error) <= ERROR_THRESHOLD)
                 //speed = speed / Math.pow(2, 3);
-                speed = speed / 2;
+                speed = (speed > 0) ? .25 : -.25;
             else
                 speed = speed;
 
             // set LEFT and RIGHT speed as negation of each other to ensure that robot
             // turns in place
             rightSpeed  = speed;
-            leftSpeed   = -rightSpeed;
+            leftSpeed   = rightSpeed;
         }
 
         // Send desired speeds to motors.
