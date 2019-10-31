@@ -82,9 +82,6 @@ public class AutonomousMode_JD {
     public void startAutonomousMode() throws InterruptedException {
         robot.init(hwMap);
 
-        //robot.leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        //robot.leftRearDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-
         autonomousClass.waitForStart();
 
         robot.flipperServo.setPosition(robot.FLIPPER_UP_POSITION);
@@ -120,7 +117,7 @@ public class AutonomousMode_JD {
         autonomousClass.telemetry.update();
         sleep(1000);
 
-        if (position == 9 || position == 10) {
+        if (position == 9 || position == 10 || position == 99) {
             int i = 0;
             while (i < 10) {
                 angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -151,6 +148,9 @@ public class AutonomousMode_JD {
         if (position == 10) {
             //targetAngle = getAbsoluteAngle(0.0);
             gyroDrive(DRIVE_SPEED, 48.0, 0.0);
+        }
+        if (position == 99) {
+            findMINSpeed();
         }
     }
 
@@ -504,8 +504,9 @@ public class AutonomousMode_JD {
         boolean  onTarget = false ;
         double leftSpeed;
         double rightSpeed;
-        final double ERROR_THRESHOLD = 40; //angle at which we begin to reduce turning speed
+        final double ERROR_THRESHOLD = 48; //angle at which we begin to reduce turning speed
         final double MAX_SPEED = 0.75;
+        final double MIN_SPEED = 0.15;
 
         // determine turn power based on +/- error
         error = getError(angle);
@@ -513,6 +514,8 @@ public class AutonomousMode_JD {
         // error < 0 ==> turn <RIGHT> when moving forward
         if (speed > MAX_SPEED)
             speed = MAX_SPEED;
+        if (speed < MIN_SPEED)
+            speed = MIN_SPEED;
         
         //determine our 'safe' zone.  If error within threshold, no corrections are made
         if (abs(error) <= HEADING_THRESHOLD) {
@@ -530,19 +533,19 @@ public class AutonomousMode_JD {
             // for each quartile, we will reduce speed by power of 2
 
             if (abs(error) <= ERROR_THRESHOLD * 0.25)
+                speed = (speed > 0) ? MIN_SPEED : -MIN_SPEED;
                 //speed = speed / Math.pow(2, 4);
                 //speed = speed / 4;
-                speed = (speed > 0) ? .1 : -.1;
             else if (abs(error) <= ERROR_THRESHOLD * 0.50)
+                speed = (speed > 0) ? MIN_SPEED + 0.05 : -(MIN_SPEED + 0.05);
                 //speed = speed / Math.pow(2, 3);
                 //speed = speed / 3;
-                speed = (speed > 0) ? .15 : -.15;
             else  if (abs(error) <= ERROR_THRESHOLD * 0.75)
+                speed = (speed > 0) ? MIN_SPEED + 0.1 : -(MIN_SPEED + 0.1);
                 //speed = speed / Math.pow(2, 2);
-                speed = (speed > 0) ? .20 : -.20;
             else if (abs(error) <= ERROR_THRESHOLD)
+                speed = (speed > 0) ? MIN_SPEED + 0.15 : -(MIN_SPEED + 0.15);
                 //speed = speed / Math.pow(2, 3);
-                speed = (speed > 0) ? .25 : -.25;
             else
                 speed = speed;
 
@@ -592,6 +595,33 @@ public class AutonomousMode_JD {
      */
     public double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
+    }
+
+    public void findMINSpeed ( ) throws InterruptedException {
+
+        robot.leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
+        for (double speed = 1.50;  speed > 0.75; speed = speed - 0.10) {
+            // Send desired speeds to motors.
+            robot.leftFrontDrive.setPower(speed);
+            robot.leftRearDrive.setPower(speed);
+            robot.rightFrontDrive.setPower(speed);
+            robot.rightRearDrive.setPower(speed);
+
+            // Display it for the driver.
+            autonomousClass.telemetry.addData("Speed = ", "%5.2f", speed);
+            autonomousClass.telemetry.update();
+            sleep(2000);
+            robot.leftFrontDrive.setPower(0);
+            robot.leftRearDrive.setPower(0);
+            robot.rightFrontDrive.setPower(0);
+            robot.rightRearDrive.setPower(0);
+
+        }
     }
 
 }
