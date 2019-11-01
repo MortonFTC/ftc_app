@@ -131,7 +131,7 @@ public class AutonomousMode_JD {
         targetAngle = angles.firstAngle;
 
         if (position == 9) {
-            targetAngle = getAbsoluteAngle(-90.0);
+            targetAngle = getAbsoluteAngle(15.0);
             autonomousClass.telemetry.addData("Turn current...", angles.firstAngle);
             autonomousClass.telemetry.addData("     new.......", targetAngle);
             autonomousClass.telemetry.addData("Speed = ", TURN_SPEED);
@@ -506,7 +506,7 @@ public class AutonomousMode_JD {
         double rightSpeed;
         final double ERROR_THRESHOLD = 48; //angle at which we begin to reduce turning speed
         final double MAX_SPEED = 0.75;
-        final double MIN_SPEED = 0.15;
+        final double MIN_SPEED = 0.18;
 
         // determine turn power based on +/- error
         error = getError(angle);
@@ -537,14 +537,14 @@ public class AutonomousMode_JD {
                 //speed = speed / Math.pow(2, 4);
                 //speed = speed / 4;
             else if (abs(error) <= ERROR_THRESHOLD * 0.50)
-                speed = (speed > 0) ? MIN_SPEED + 0.05 : -(MIN_SPEED + 0.05);
+                speed = (speed > 0) ? MIN_SPEED + 0.03 : -(MIN_SPEED + 0.03);
                 //speed = speed / Math.pow(2, 3);
                 //speed = speed / 3;
             else  if (abs(error) <= ERROR_THRESHOLD * 0.75)
-                speed = (speed > 0) ? MIN_SPEED + 0.1 : -(MIN_SPEED + 0.1);
+                speed = (speed > 0) ? MIN_SPEED + 0.06 : -(MIN_SPEED + 0.06);
                 //speed = speed / Math.pow(2, 2);
             else if (abs(error) <= ERROR_THRESHOLD)
-                speed = (speed > 0) ? MIN_SPEED + 0.15 : -(MIN_SPEED + 0.15);
+                speed = (speed > 0) ? MIN_SPEED + 0.09 : -(MIN_SPEED + 0.09);
                 //speed = speed / Math.pow(2, 3);
             else
                 speed = speed;
@@ -605,7 +605,10 @@ public class AutonomousMode_JD {
         robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        for (double speed = -1.50;  speed < -0.75; speed = speed + 0.10) {
+//        for (double speed = -0.20;  speed < -0.075; speed = speed + 0.01) {
+        for (double speed = 0.20;  speed > 0.075; speed = speed - 0.01) {
+            //MIN_SPEED for RIGHT turn (i.e. negative speed) = 0.18;
+            //MIN_SPEED same for LEFT turn;
             // Send desired speeds to motors.
             robot.leftFrontDrive.setPower(speed);
             robot.leftRearDrive.setPower(speed);
@@ -615,7 +618,7 @@ public class AutonomousMode_JD {
             // Display it for the driver.
             autonomousClass.telemetry.addData("Speed = ", "%5.2f", speed);
             autonomousClass.telemetry.update();
-            sleep(2000);
+            sleep(3000);
             robot.leftFrontDrive.setPower(0);
             robot.leftRearDrive.setPower(0);
             robot.rightFrontDrive.setPower(0);
