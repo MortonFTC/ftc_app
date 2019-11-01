@@ -605,7 +605,7 @@ public class AutonomousMode_JD {
         robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        for (double speed = 1.50;  speed > 0.75; speed = speed - 0.10) {
+        for (double speed = -1.50;  speed < -0.75; speed = speed + 0.10) {
             // Send desired speeds to motors.
             robot.leftFrontDrive.setPower(speed);
             robot.leftRearDrive.setPower(speed);
