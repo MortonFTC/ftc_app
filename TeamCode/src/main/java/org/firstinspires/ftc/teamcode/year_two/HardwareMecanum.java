@@ -30,9 +30,11 @@
 package org.firstinspires.ftc.teamcode.year_two;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -77,6 +79,7 @@ public class HardwareMecanum
     public BNO055IMU imu = null;
     public TouchSensor upperArmLimitSwitch = null;
     public ColorSensor colorSensor  = null; // Port 1: REV Color/Range Sensor
+    public Rev2mDistanceSensor sensorDistance = null;
 
     public static final double ARM_LOWER_COUNTS_PER_MOTOR_REV = 1300;    // eg: TETRIX Motor Encoder
     public static final double ARM_LOWER_MOTOR_REVS_PER_SHAFT_REV = 28;
